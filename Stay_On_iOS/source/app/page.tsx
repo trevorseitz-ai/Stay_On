@@ -496,7 +496,7 @@ export default function Home() {
         }
       }
       if (state === "playing") {
-        const nextLevel = Math.floor(distance / 2800);
+        const nextLevel = Math.floor(distance / 3000);
         if (nextLevel > difficultyLevel) {
           difficultyLevel = nextLevel;
           levelMessage =
