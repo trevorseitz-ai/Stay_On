@@ -16,6 +16,11 @@ export default function Home() {
     () => localStorage.getItem("stay-on-muted") === "1"
   );
   const musicRef = useRef<HTMLAudioElement | null>(null);
+  const mutedRef = useRef(muted);
+
+  useEffect(() => {
+    mutedRef.current = muted;
+  }, [muted]);
 
   const toggleMuted = () => {
     setMuted((prev) => {
@@ -60,6 +65,42 @@ export default function Home() {
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
+
+    let audioCtx: AudioContext | null = null;
+    const playCrashSound = () => {
+      if (mutedRef.current) return;
+      try {
+        audioCtx ??= new (window.AudioContext ||
+          (window as unknown as { webkitAudioContext: typeof AudioContext })
+            .webkitAudioContext)();
+        const ctx2 = audioCtx;
+        const now = ctx2.currentTime;
+
+        const noiseBuffer = ctx2.createBuffer(1, ctx2.sampleRate * 0.3, ctx2.sampleRate);
+        const data = noiseBuffer.getChannelData(0);
+        for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
+        const noise = ctx2.createBufferSource();
+        noise.buffer = noiseBuffer;
+        const noiseGain = ctx2.createGain();
+        noiseGain.gain.setValueAtTime(0.5, now);
+        noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+        noise.connect(noiseGain).connect(ctx2.destination);
+        noise.start(now);
+
+        const thud = ctx2.createOscillator();
+        thud.type = "sine";
+        thud.frequency.setValueAtTime(140, now);
+        thud.frequency.exponentialRampToValueAtTime(40, now + 0.25);
+        const thudGain = ctx2.createGain();
+        thudGain.gain.setValueAtTime(0.6, now);
+        thudGain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+        thud.connect(thudGain).connect(ctx2.destination);
+        thud.start(now);
+        thud.stop(now + 0.25);
+      } catch {
+        // Web Audio unavailable — fail silently, crash sound is non-critical.
+      }
+    };
 
     let width = 0;
     let height = 0;
@@ -476,6 +517,7 @@ export default function Home() {
         if (Math.abs(playerX - roadCenter(distance)) > safe) {
           state = "crashed";
           shake = 11;
+          playCrashSound();
           const metres = Math.floor(distance / 10);
           setLastDistance(metres);
           setShowFeedback(true);
@@ -537,6 +579,7 @@ export default function Home() {
 
     return () => {
       cancelAnimationFrame(animation);
+      audioCtx?.close().catch(() => {});
       window.removeEventListener("resize", resize);
       canvas.removeEventListener("pointerdown", actionDown);
       canvas.removeEventListener("pointerup", actionUp);

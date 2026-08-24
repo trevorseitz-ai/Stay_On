@@ -10,15 +10,13 @@ import {
   InterstitialAdPluginEvents,
 } from "@capacitor-community/admob";
 import { Purchases, PURCHASES_ERROR_CODE } from "@revenuecat/purchases-capacitor";
+import posthog from "posthog-js";
 
 type GameState = "ready" | "countdown" | "playing" | "crashed";
 
-const REVENUECAT_IOS_API_KEY = "appl_REPLACE_ME"; // TODO: real RevenueCat public iOS API key
-const AD_FREE_ENTITLEMENT_ID = "ad_free"; // TODO: must match RevenueCat dashboard entitlement id
-const REMOVE_ADS_PACKAGE_ID = "remove_ads"; // TODO: must match RevenueCat Offering package id
-// Google's public test interstitial unit — swap for our approved AdMob interstitial ad
-// unit once Apple's review of the ad-supported build (and AdMob's own review) clears.
-const INTERSTITIAL_AD_ID = "ca-app-pub-3940256099942544/4411468910";
+const REVENUECAT_IOS_API_KEY = "appl_dZSneUxWQOUORrPlotrOQWefBCF";
+const AD_FREE_ENTITLEMENT_ID = "ad_free"; // must match RevenueCat dashboard entitlement id
+const INTERSTITIAL_AD_ID = "ca-app-pub-4738248194115302/3809716597";
 const INTERSTITIAL_RUN_INTERVAL = 2;
 
 export default function Home() {
@@ -40,6 +38,11 @@ export default function Home() {
   const [purchasing, setPurchasing] = useState(false);
   const [purchaseError, setPurchaseError] = useState<string | null>(null);
   const adFreeRef = useRef(adFree);
+  const mutedRef = useRef(muted);
+
+  useEffect(() => {
+    mutedRef.current = muted;
+  }, [muted]);
 
   useEffect(() => {
     adFreeRef.current = adFree;
@@ -57,21 +60,24 @@ export default function Home() {
   const removeAds = async () => {
     setPurchaseError(null);
     setPurchasing(true);
+    posthog.capture("ad_free_purchase_started");
     try {
       const { current } = await Purchases.getOfferings();
-      const pkg = current?.availablePackages.find(
-        (p) => p.identifier === REMOVE_ADS_PACKAGE_ID
-      );
+      const pkg = current?.lifetime;
       if (!pkg) {
         setPurchaseError("Unavailable right now.");
+        posthog.capture("ad_free_purchase_failed", { failure_stage: "offering_unavailable" });
         return;
       }
       const { customerInfo } = await Purchases.purchasePackage({ aPackage: pkg });
-      markAdFree(Boolean(customerInfo.entitlements.active[AD_FREE_ENTITLEMENT_ID]));
+      const owns = Boolean(customerInfo.entitlements.active[AD_FREE_ENTITLEMENT_ID]);
+      markAdFree(owns);
+      posthog.capture("ad_free_purchase_completed", { entitlement_active: owns });
     } catch (err) {
       const code = (err as { code?: PURCHASES_ERROR_CODE })?.code;
       if (code !== PURCHASES_ERROR_CODE.PURCHASE_CANCELLED_ERROR) {
         setPurchaseError("Purchase failed. Try again.");
+        posthog.capture("ad_free_purchase_failed", { failure_stage: "purchase" });
       }
     } finally {
       setPurchasing(false);
@@ -84,27 +90,29 @@ export default function Home() {
       const { customerInfo } = await Purchases.restorePurchases();
       const owns = Boolean(customerInfo.entitlements.active[AD_FREE_ENTITLEMENT_ID]);
       markAdFree(owns);
+      posthog.capture("purchases_restored", { entitlement_active: owns });
       if (!owns) setPurchaseError("Nothing to restore.");
     } catch {
       setPurchaseError("Restore failed. Try again.");
+      posthog.capture("purchases_restored", { entitlement_active: false, restore_succeeded: false });
     }
   };
 
   const toggleMuted = () => {
-    setMuted((prev) => {
-      const next = !prev;
-      localStorage.setItem("stay-on-muted", next ? "1" : "0");
-      const music = musicRef.current;
-      if (music) {
-        music.muted = next;
-        if (!next) music.play().catch(() => {});
-      }
-      return next;
-    });
+    const next = !muted;
+    setMuted(next);
+    localStorage.setItem("stay-on-muted", next ? "1" : "0");
+    const music = musicRef.current;
+    if (music) {
+      music.muted = next;
+      if (!next) music.play().catch(() => {});
+    }
+    posthog.capture("audio_setting_changed", { muted: next });
   };
 
   const sendFeedback = (event: FormEvent) => {
     event.preventDefault();
+    posthog.capture("feedback_submitted", { reason: feedbackReason });
     setFeedbackSent(true);
     setFeedbackOpen(false);
   };
@@ -192,6 +200,42 @@ export default function Home() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
+    let audioCtx: AudioContext | null = null;
+    const playCrashSound = () => {
+      if (mutedRef.current) return;
+      try {
+        audioCtx ??= new (window.AudioContext ||
+          (window as unknown as { webkitAudioContext: typeof AudioContext })
+            .webkitAudioContext)();
+        const ctx2 = audioCtx;
+        const now = ctx2.currentTime;
+
+        const noiseBuffer = ctx2.createBuffer(1, ctx2.sampleRate * 0.3, ctx2.sampleRate);
+        const data = noiseBuffer.getChannelData(0);
+        for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
+        const noise = ctx2.createBufferSource();
+        noise.buffer = noiseBuffer;
+        const noiseGain = ctx2.createGain();
+        noiseGain.gain.setValueAtTime(0.5, now);
+        noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+        noise.connect(noiseGain).connect(ctx2.destination);
+        noise.start(now);
+
+        const thud = ctx2.createOscillator();
+        thud.type = "sine";
+        thud.frequency.setValueAtTime(140, now);
+        thud.frequency.exponentialRampToValueAtTime(40, now + 0.25);
+        const thudGain = ctx2.createGain();
+        thudGain.gain.setValueAtTime(0.6, now);
+        thudGain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+        thud.connect(thudGain).connect(ctx2.destination);
+        thud.start(now);
+        thud.stop(now + 0.25);
+      } catch {
+        // Web Audio unavailable — fail silently, crash sound is non-critical.
+      }
+    };
+
     let width = 0;
     let height = 0;
     let dpr = 1;
@@ -211,7 +255,8 @@ export default function Home() {
     let shake = 0;
     let best = Number(localStorage.getItem("stay-on-best") || 0);
     let runNumber = Number(localStorage.getItem("stay-on-runs") || 0);
-    const track = (_eventName: string, _metres = 0) => undefined;
+    let crashIsNewBest = false;
+    let frameNow = performance.now();
 
     const baseRoadWidth = () => Math.max(155, Math.min(235, width * 0.56));
     const speedSteps = () =>
@@ -272,7 +317,7 @@ export default function Home() {
       setFeedbackSent(false);
       runNumber += 1;
       localStorage.setItem("stay-on-runs", String(runNumber));
-      track("run_started");
+      posthog.capture("run_started");
       state = "countdown";
       countdownLeft = 1.2;
       countdownEndsAt = performance.now() + 1200;
@@ -285,6 +330,7 @@ export default function Home() {
       steerVelocity = 0;
       playerX = roadCenter(0);
       shake = 0;
+      crashIsNewBest = false;
     };
 
     const startSteering = (pointerId?: number) => {
@@ -570,20 +616,44 @@ export default function Home() {
       ctx.fillText(title, width / 2, centerY);
 
       if (state === "crashed") {
-        ctx.fillStyle = "#d7ff3f";
-        ctx.shadowBlur = 18;
-        ctx.shadowColor = "#baff29";
-        ctx.font = "900 22px ui-monospace, monospace";
-        ctx.fillText(`REACHED LEVEL ${difficultyLevel + 1}`, width / 2, centerY + 36);
-        ctx.shadowBlur = 0;
+        const metres = Math.floor(distance / 10);
+        const flashOn = crashIsNewBest && Math.floor(frameNow / 650) % 2 === 0;
+        const bannerY = centerY + 46;
+
+        if (flashOn) {
+          const bannerText = "NEW HIGH SCORE";
+          ctx.font = `900 ${Math.min(30, width * 0.078)}px Arial, sans-serif`;
+          const textWidth = ctx.measureText(bannerText).width;
+          const bannerW = textWidth + 36;
+          const bannerH = 44;
+          ctx.save();
+          ctx.shadowBlur = 20;
+          ctx.shadowColor = "#ff9f1c";
+          ctx.fillStyle = "#ffdb45";
+          ctx.fillRect(width / 2 - bannerW / 2, bannerY - bannerH * 0.72, bannerW, bannerH);
+          ctx.shadowBlur = 0;
+          ctx.fillStyle = "#0a0d0f";
+          ctx.fillText(bannerText, width / 2, bannerY);
+          ctx.restore();
+        } else {
+          ctx.fillStyle = "#d7ff3f";
+          ctx.shadowBlur = 20;
+          ctx.shadowColor = "#baff29";
+          ctx.font = `900 ${Math.min(58, width * 0.15)}px Arial, sans-serif`;
+          ctx.fillText(`${metres} m`, width / 2, bannerY + 8);
+          ctx.shadowBlur = 0;
+        }
 
         ctx.fillStyle = "#f4fbfc";
+        ctx.font = "900 18px ui-monospace, monospace";
+        ctx.fillText(`REACHED LEVEL ${difficultyLevel + 1}`, width / 2, centerY + 88);
+
         ctx.font = "700 15px ui-monospace, monospace";
-        ctx.fillText(subtitle, width / 2, centerY + 68);
+        ctx.fillText(subtitle, width / 2, centerY + 116);
 
         ctx.fillStyle = "rgba(244,251,252,.88)";
         ctx.font = "700 15px ui-monospace, monospace";
-        ctx.fillText("HOLD = LEFT  •  RELEASE = RIGHT", width / 2, centerY + 104);
+        ctx.fillText("HOLD = LEFT  •  RELEASE = RIGHT", width / 2, centerY + 148);
       } else {
         ctx.fillStyle = "#d7ff3f";
         ctx.font = "700 15px ui-monospace, monospace";
@@ -602,6 +672,7 @@ export default function Home() {
       if (disposed) return;
       const dt = Math.min((now - lastTime) / 1000, 0.035);
       lastTime = now;
+      frameNow = now;
       if (state === "countdown") {
         countdownLeft = Math.max(0, (countdownEndsAt - now) / 1000);
         if (countdownLeft <= 0) {
@@ -631,11 +702,18 @@ export default function Home() {
         if (Math.abs(playerX - roadCenter(distance)) > safe) {
           state = "crashed";
           shake = 11;
+          playCrashSound();
           const metres = Math.floor(distance / 10);
           setLastDistance(metres);
           setShowFeedback(true);
-          track("run_ended", metres);
-          if (distance > best) {
+          const isNewBest = distance > best;
+          crashIsNewBest = isNewBest;
+          posthog.capture("run_ended", {
+            distance_metres: metres,
+            level_reached: difficultyLevel + 1,
+            is_new_best: isNewBest,
+          });
+          if (isNewBest) {
             best = distance;
             localStorage.setItem("stay-on-best", String(best));
           }
@@ -709,7 +787,6 @@ export default function Home() {
     canvas.addEventListener("selectstart", preventNativeGesture, { passive: false });
     canvas.addEventListener("dragstart", preventNativeGesture, { passive: false });
     resize();
-    track("game_opened");
     animation = requestAnimationFrame(frame);
 
     return () => {
@@ -720,6 +797,7 @@ export default function Home() {
       disposed = true;
       setSteeringPressed(false);
       cancelAnimationFrame(animation);
+      audioCtx?.close().catch(() => {});
       window.removeEventListener("resize", resize);
       canvas.removeEventListener("pointerdown", actionDown);
       canvas.removeEventListener("pointerup", actionUp);
@@ -772,7 +850,13 @@ export default function Home() {
         <span className="steering-label">PLACE THUMB HERE</span>
       </div>
       {showFeedback && !feedbackOpen && (
-        <button className="feedback-trigger" onClick={() => setFeedbackOpen(true)}>
+        <button
+          className="feedback-trigger"
+          onClick={() => {
+            posthog.capture("feedback_opened");
+            setFeedbackOpen(true);
+          }}
+        >
           {feedbackSent ? "THANKS!" : "QUICK FEEDBACK"}
         </button>
       )}
