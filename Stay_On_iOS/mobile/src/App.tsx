@@ -9,7 +9,12 @@ import {
   BannerAdSize,
   InterstitialAdPluginEvents,
 } from "@capacitor-community/admob";
-import { Purchases, PURCHASES_ERROR_CODE } from "@revenuecat/purchases-capacitor";
+import {
+  Purchases,
+  PURCHASES_ERROR_CODE,
+  LOG_LEVEL,
+  type PurchasesOffering,
+} from "@revenuecat/purchases-capacitor";
 import posthog from "posthog-js";
 
 type GameState = "ready" | "countdown" | "playing" | "crashed";
@@ -18,6 +23,12 @@ const REVENUECAT_IOS_API_KEY = "appl_dZSneUxWQOUORrPlotrOQWefBCF";
 const AD_FREE_ENTITLEMENT_ID = "ad_free"; // must match RevenueCat dashboard entitlement id
 const INTERSTITIAL_AD_ID = "ca-app-pub-4738248194115302/3809716597";
 const INTERSTITIAL_RUN_INTERVAL = 2;
+
+// The ad-free unlock is configured as the Lifetime package on the current
+// RevenueCat offering; fall back to the first available package so a dashboard
+// slot mismatch doesn't disable the purchase button.
+const adFreePackage = (offering: PurchasesOffering | null | undefined) =>
+  offering?.lifetime ?? offering?.availablePackages?.[0] ?? null;
 
 export default function Home() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -64,7 +75,7 @@ export default function Home() {
     posthog.capture("ad_free_purchase_started");
     try {
       const { current } = await Purchases.getOfferings();
-      const pkg = current?.lifetime;
+      const pkg = adFreePackage(current);
       if (!pkg) {
         setPurchaseError("Unavailable right now.");
         posthog.capture("ad_free_purchase_failed", { failure_stage: "offering_unavailable" });
@@ -180,6 +191,9 @@ export default function Home() {
 
       const initPurchases = async () => {
         try {
+          await Purchases.setLogLevel({
+            level: import.meta.env.PROD ? LOG_LEVEL.INFO : LOG_LEVEL.DEBUG,
+          });
           await Purchases.configure({ apiKey: REVENUECAT_IOS_API_KEY });
           const { customerInfo } = await Purchases.getCustomerInfo();
           const owns = Boolean(customerInfo.entitlements.active[AD_FREE_ENTITLEMENT_ID]);
@@ -189,7 +203,7 @@ export default function Home() {
           if (owns) return;
           try {
             const { current } = await Purchases.getOfferings();
-            const price = current?.lifetime?.product.priceString;
+            const price = adFreePackage(current)?.product.priceString;
             if (price) setAdFreePrice(price);
           } catch {
             // Non-fatal: button falls back to "REMOVE ADS" with no price.
