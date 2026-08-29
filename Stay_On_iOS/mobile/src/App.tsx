@@ -37,6 +37,7 @@ export default function Home() {
   );
   const [purchasing, setPurchasing] = useState(false);
   const [purchaseError, setPurchaseError] = useState<string | null>(null);
+  const [adFreePrice, setAdFreePrice] = useState<string | null>(null);
   const adFreeRef = useRef(adFree);
   const mutedRef = useRef(muted);
 
@@ -186,6 +187,13 @@ export default function Home() {
           adFreeRef.current = owns;
           localStorage.setItem("stay-on-ad-free", owns ? "1" : "0");
           if (owns) return;
+          try {
+            const { current } = await Purchases.getOfferings();
+            const price = current?.lifetime?.product.priceString;
+            if (price) setAdFreePrice(price);
+          } catch {
+            // Non-fatal: button falls back to "REMOVE ADS" with no price.
+          }
           await showBannerAd();
           await prepareInterstitial();
         } catch (err) {
@@ -842,13 +850,15 @@ export default function Home() {
           </svg>
         )}
       </button>
-      <div className={`steering-control ${steeringPressed ? "is-pressed" : ""}`} aria-hidden="true">
-        <span className="steering-spoke spoke-top" />
-        <span className="steering-spoke spoke-left" />
-        <span className="steering-spoke spoke-right" />
-        <span className="steering-hub" />
-        <span className="steering-label">PLACE THUMB HERE</span>
-      </div>
+      {!showFeedback && (
+        <div className={`steering-control ${steeringPressed ? "is-pressed" : ""}`} aria-hidden="true">
+          <span className="steering-spoke spoke-top" />
+          <span className="steering-spoke spoke-left" />
+          <span className="steering-spoke spoke-right" />
+          <span className="steering-hub" />
+          <span className="steering-label">PLACE THUMB HERE</span>
+        </div>
+      )}
       {showFeedback && !feedbackOpen && (
         <button
           className="feedback-trigger"
@@ -863,7 +873,11 @@ export default function Home() {
       {showFeedback && !feedbackOpen && !adFree && Capacitor.isNativePlatform() && (
         <div className="remove-ads-wrap">
           <button className="remove-ads-trigger" onClick={removeAds} disabled={purchasing}>
-            {purchasing ? "…" : "REMOVE ADS"}
+            {purchasing
+              ? "…"
+              : adFreePrice
+                ? `REMOVE ADS · ${adFreePrice}`
+                : "REMOVE ADS"}
           </button>
           <button className="restore-purchases-link" onClick={restorePurchases}>
             Restore purchase
