@@ -1,0 +1,5 @@
+app_identifier("com.trevorseitz.stayon")
+team_id("78H427V6FY") # Apple Developer team
+
+# Auth is via App Store Connect API key (see fastlane/README.md), so no
+# apple_id / itc_team_id needed here.

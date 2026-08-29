@@ -1,0 +1,11 @@
+# fastlane
+fastlane/.env
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/test_output
+*.p8
+build/
+*.ipa
+*.dSYM.zip
+vendor/bundle/
+.bundle/
