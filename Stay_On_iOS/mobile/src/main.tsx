@@ -1,7 +1,23 @@
 import { createRoot } from "react-dom/client";
 import posthog from "posthog-js";
+import * as Sentry from "@sentry/capacitor";
+import * as SentryReact from "@sentry/react";
 import App from "./App";
 import "./styles.css";
+
+const sentryDsn = import.meta.env.VITE_SENTRY_DSN;
+
+if (sentryDsn) {
+  Sentry.init(
+    {
+      dsn: sentryDsn,
+      // Native iOS crashes are captured automatically by the Capacitor plugin.
+      tracesSampleRate: import.meta.env.PROD ? 0.2 : 1.0,
+      environment: import.meta.env.PROD ? "production" : "development",
+    },
+    SentryReact.init,
+  );
+}
 
 const posthogKey = import.meta.env.VITE_POSTHOG_KEY;
 const posthogHost = import.meta.env.VITE_POSTHOG_HOST;

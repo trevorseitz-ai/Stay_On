@@ -16,6 +16,8 @@
     "@capacitor/core": "^7.4.0",
     "@capacitor/ios": "^7.4.0",
     "@revenuecat/purchases-capacitor": "^11.3.2",
+    "@sentry/capacitor": "^4.3.0",
+    "@sentry/react": "^10.69.0",
     "posthog-js": "^1.418.13",
     "react": "^19.2.0",
     "react-dom": "^19.2.0"

@@ -15,12 +15,19 @@ PODS:
   - RevenuecatPurchasesCapacitor (11.3.2):
     - Capacitor
     - PurchasesHybridCommon (= 17.25.0)
+  - Sentry (9.16.1):
+    - Sentry/Core (= 9.16.1)
+  - Sentry/Core (9.16.1)
+  - SentryCapacitor (4.3.0):
+    - Capacitor
+    - Sentry (= 9.16.1)
 
 DEPENDENCIES:
   - "Capacitor (from `../../node_modules/@capacitor/ios`)"
   - "CapacitorCommunityAdmob (from `../../node_modules/@capacitor-community/admob`)"
   - "CapacitorCordova (from `../../node_modules/@capacitor/ios`)"
   - "RevenuecatPurchasesCapacitor (from `../../node_modules/@revenuecat/purchases-capacitor`)"
+  - "SentryCapacitor (from `../../node_modules/@sentry/capacitor`)"
 
 SPEC REPOS:
   trunk:
@@ -28,6 +35,7 @@ SPEC REPOS:
     - GoogleUserMessagingPlatform
     - PurchasesHybridCommon
     - RevenueCat
+    - Sentry
 
 EXTERNAL SOURCES:
   Capacitor:
@@ -38,6 +46,8 @@ EXTERNAL SOURCES:
     :path: "../../node_modules/@capacitor/ios"
   RevenuecatPurchasesCapacitor:
     :path: "../../node_modules/@revenuecat/purchases-capacitor"
+  SentryCapacitor:
+    :path: "../../node_modules/@sentry/capacitor"
 
 SPEC CHECKSUMS:
   Capacitor: ff6bf01336ac353098378828aff465095a89e459
@@ -48,7 +58,9 @@ SPEC CHECKSUMS:
   PurchasesHybridCommon: 6a79a873ab52f777bfa36e9516f3fcd84d3b3428
   RevenueCat: eab035bbab271faccfef5c36eaff2a1ffef14dc0
   RevenuecatPurchasesCapacitor: fa376932f9967c7ab4b5eac477e824d90393b91a
+  Sentry: e5d82a3c1f2d951f75c04c57215a0abb1facbd51
+  SentryCapacitor: 0561def7ada7e47d0437324e7aa3db60d52bfe40
 
-PODFILE CHECKSUM: 55b46061e0adfe7985c4b7f9a9e733023c798c6f
+PODFILE CHECKSUM: 37da28ca9dd8a97114bc7c88b8bd0bdf55448857
 
 COCOAPODS: 1.16.2
