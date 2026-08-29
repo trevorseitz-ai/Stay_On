@@ -1,34 +1,64 @@
-# fastlane
+fastlane documentation
+----
 
-Runs from `Stay_On_iOS/mobile/ios/App`.
+# Installation
 
-## One-time setup
+Make sure you have the latest version of the Xcode command line tools installed:
 
-1. **App Store Connect API key** — App Store Connect → Users and Access →
-   Integrations → App Store Connect API → generate a key with the **App Manager**
-   role. Download the `.p8` (one download only).
+```sh
+xcode-select --install
+```
 
-2. Store it and export the three values (put them in a shell profile, or a
-   `fastlane/.env` file which fastlane auto-loads — that file is git-ignored):
+For _fastlane_ installation instructions, see [Installing _fastlane_](https://docs.fastlane.tools/#installing-fastlane)
 
-   ```sh
-   ASC_KEY_ID=XXXXXXXXXX
-   ASC_ISSUER_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-   ASC_KEY_PATH=/Users/trevorseitz/.appstoreconnect/AuthKey_XXXXXXXXXX.p8
-   ```
+# Available Actions
 
-## Lanes
+## iOS
 
-| Lane | What it does |
-|------|--------------|
-| `fastlane sync_web` | `npm run build` + `npx cap sync ios` |
-| `fastlane bump` | Set build number to a UTC timestamp |
-| `fastlane build` | Signed App Store `.ipa` into `./build` |
-| `fastlane beta` | sync_web → bump → build → upload to TestFlight |
+### ios sync_web
 
-## Notes
+```sh
+[bundle exec] fastlane ios sync_web
+```
 
-- Signing: relies on the Xcode project's existing automatic signing for team
-  `78H427V6FY`. If CI needs it, add `match` later.
-- The IAP (`com.trevorseitz.stayon.removeads`) must exist in App Store Connect
-  for RevenueCat + StoreKit to resolve it in TestFlight.
+Rebuild the web bundle and sync it into the iOS project
+
+### ios auth_check
+
+```sh
+[bundle exec] fastlane ios auth_check
+```
+
+Verify the App Store Connect API key authenticates
+
+### ios bump
+
+```sh
+[bundle exec] fastlane ios bump
+```
+
+Set the build number to a UTC timestamp (monotonic, no state to track)
+
+### ios build
+
+```sh
+[bundle exec] fastlane ios build
+```
+
+Build a signed App Store .ipa into ./build
+
+### ios beta
+
+```sh
+[bundle exec] fastlane ios beta
+```
+
+Sync web, bump build number, build, and upload to TestFlight
+
+----
+
+This README.md is auto-generated and will be re-generated every time [_fastlane_](https://fastlane.tools) is run.
+
+More information about _fastlane_ can be found on [fastlane.tools](https://fastlane.tools).
+
+The documentation of _fastlane_ can be found on [docs.fastlane.tools](https://docs.fastlane.tools).
