@@ -17,13 +17,14 @@
     "@capacitor/ios": "^7.4.0",
     "@revenuecat/purchases-capacitor": "^11.3.2",
     "@sentry/capacitor": "^4.3.0",
-    "@sentry/react": "^10.69.0",
+    "@sentry/react": "10.69.0",
     "posthog-js": "^1.418.13",
     "react": "^19.2.0",
     "react-dom": "^19.2.0"
   },
   "devDependencies": {
     "@capacitor/cli": "^7.4.0",
+    "@sentry/vite-plugin": "^5.4.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@vitejs/plugin-react": "^5.0.0",
