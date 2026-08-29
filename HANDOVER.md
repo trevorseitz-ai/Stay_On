@@ -1,6 +1,6 @@
 # Stay On — Handover
 
-Endless arcade night-driving game ("Stay On"), synthwave/outrun aesthetic. Native iOS app via Capacitor, plus a parallel web build. Last updated 2026-08-23.
+Endless arcade night-driving game ("Stay On"), synthwave/outrun aesthetic. Native iOS app via Capacitor, plus a parallel web build. Last updated 2026-08-29.
 
 ## Directory map
 
@@ -20,13 +20,16 @@ Both `Stay_On_iOS/mobile/src/App.tsx` and `Stay_On_iOS/source/app/page.tsx` cont
 - **Banner ad** (AdMob): always shown on native launch, unless the player owns the ad-free entitlement. Real ad unit: `ca-app-pub-4738248194115302/4821502245`.
 - **Interstitial ad** (AdMob): shown after every 2nd crash (`INTERSTITIAL_RUN_INTERVAL = 2` in `App.tsx`), preloaded ahead of time so there's no load delay at the crash screen, skipped once ad-free is owned. Real approved ad unit: `ca-app-pub-4738248194115302/3809716597`.
 - **"Remove Ads" IAP** (RevenueCat, `@revenuecat/purchases-capacitor@11.3.2` — pinned below v12 because v12+ requires Capacitor 8, this project is on Capacitor 7): one-time non-consumable purchase ($2.99), button + "Restore purchase" link on the crash screen. **Fully wired and verified working end-to-end** via sandbox purchase test on a real device (2026-08-23): real RevenueCat API key in place, Apple product `com.trevorseitz.stayon.removeads` created in App Store Connect and imported/attached to the `ad_free` entitlement in RevenueCat, package matched via `current?.lifetime` (RevenueCat auto-assigns lifetime packages the reserved identifier `$rc_lifetime` — don't try to match on a custom package name string).
+  - The button label shows the localized store price when the offering loads (`REMOVE ADS · $2.99`, from `current.lifetime.product.priceString`), falling back to a plain `REMOVE ADS` label. Price is fetched once during `initPurchases` into the `adFreePrice` state.
+  - `ios/App/StayOn.storekit` + the committed shared `App.xcscheme` (`ios/App/App.xcodeproj/xcshareddata/xcschemes/`) let the **simulator** load the offering and run a StoreKit *test* purchase — but only when launched from Xcode (Run the App scheme). A plain `xcodebuild`/`simctl` launch does not apply the StoreKit config, so the button falls back to the label with no price there. Release builds ignore the `.storekit` file entirely.
+- **Steering hint on crash screen**: the decorative steering-wheel hint (`.steering-control` + "PLACE THUMB HERE") is now hidden whenever `showFeedback` is true, so it no longer overlaps the Quick Feedback / Remove Ads buttons on the crash screen. Mobile-only change (`mobile/src/App.tsx`).
 - App Store Connect **Paid Apps Agreement + tax/banking** are now signed/submitted (previously only had the Free Apps Agreement, which silently blocks StoreKit from returning any IAP product — this was the root cause of a long RevenueCat error 23 "offerings empty" debugging session before it resolved).
 - **Crash sound**: a synthesized noise-burst + low-frequency "thud" (Web Audio API, `AudioContext` — no external audio asset) plays the instant the car crashes, in both `mobile/src/App.tsx` and `source/app/page.tsx`. Respects the existing mute toggle via a `mutedRef` (the mute `useState` isn't in the main game effect's dependency array, so a ref mirrors it for the closure to read live). The `AudioContext` is created lazily on first crash and closed on effect cleanup.
 
 ## Remaining before wide release
 
 - The public App Store listing itself is not yet approved — last submission (build 8) showed "Ready for Review" with unresolved issues in App Store Connect as of 2026-08-23. Only TestFlight beta access (build 4) had cleared. Check current status in App Store Connect → Distribution before assuming this is live.
-- IAP screenshot for App Store review must be an exact native resolution from Apple's accepted list (1260×2736, 1290×2796, or 1320×2868 portrait) — a Simulator screenshot via Cmd+S on a Pro Max/Plus/Air-class device works well; a resized/AirDropped photo from a real device often doesn't match and gets rejected.
+- IAP screenshot for App Store review must be an exact native resolution from Apple's accepted list (1260×2736, 1290×2796, or 1320×2868 portrait) — a Simulator screenshot via Cmd+S on a Pro Max/Plus/Air-class device works well; a resized/AirDropped photo from a real device often doesn't match and gets rejected. Capture it on the **crash screen** (where the Remove Ads button lives), and run from **Xcode** (App scheme) so the StoreKit config loads and the button shows the price. The system "Sign in to Apple Account" payment sheet is Apple-generated and is *not* what the review screenshot should show.
 
 ## Backlog / ideas for later
 
