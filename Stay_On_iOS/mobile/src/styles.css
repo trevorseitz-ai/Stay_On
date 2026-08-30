@@ -187,6 +187,33 @@ canvas {
   margin: 0;
 }
 
+.difficulty-select {
+  position: absolute;
+  z-index: 4;
+  left: 50%;
+  bottom: 25%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 6px;
+}
+
+.difficulty-select button {
+  border: 1px solid rgba(235, 245, 246, 0.35);
+  border-radius: 999px;
+  padding: 8px 14px;
+  background: rgba(5, 10, 12, 0.82);
+  color: rgba(244, 251, 252, 0.7);
+  font: 800 10px ui-monospace, monospace;
+  letter-spacing: 0.1em;
+  touch-action: manipulation;
+}
+
+.difficulty-select button.is-selected {
+  border-color: rgba(215, 255, 63, 0.7);
+  background: rgba(5, 10, 12, 0.92);
+  color: #d7ff3f;
+}
+
 .feedback-trigger {
   position: absolute;
   z-index: 4;

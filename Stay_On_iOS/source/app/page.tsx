@@ -4,6 +4,21 @@ import { FormEvent, useEffect, useRef, useState } from "react";
 
 type GameState = "ready" | "countdown" | "playing" | "crashed";
 
+type Difficulty = "easy" | "medium" | "hard";
+
+// Difficulty picks the level (0-indexed) the run starts on. Displayed level is
+// startLevel + 1, so easy/medium/hard begin at LEVEL 1 / 5 / 10.
+const DIFFICULTY_START_LEVEL: Record<Difficulty, number> = {
+  easy: 0,
+  medium: 4,
+  hard: 9,
+};
+const DIFFICULTY_LABELS: [Difficulty, string][] = [
+  ["easy", "EASY"],
+  ["medium", "MEDIUM"],
+  ["hard", "HARD"],
+];
+
 export default function Home() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [showFeedback, setShowFeedback] = useState(false);
@@ -15,12 +30,28 @@ export default function Home() {
   const [muted, setMuted] = useState(
     () => localStorage.getItem("stay-on-muted") === "1"
   );
+  const [difficulty, setDifficulty] = useState<Difficulty>(
+    () =>
+      (localStorage.getItem("stay-on-difficulty") as Difficulty | null) ?? "easy"
+  );
+  const [running, setRunning] = useState(false);
   const musicRef = useRef<HTMLAudioElement | null>(null);
   const mutedRef = useRef(muted);
+  const difficultyRef = useRef(difficulty);
 
   useEffect(() => {
     mutedRef.current = muted;
   }, [muted]);
+
+  useEffect(() => {
+    difficultyRef.current = difficulty;
+  }, [difficulty]);
+
+  const changeDifficulty = (next: Difficulty) => {
+    setDifficulty(next);
+    difficultyRef.current = next;
+    localStorage.setItem("stay-on-difficulty", next);
+  };
 
   const toggleMuted = () => {
     setMuted((prev) => {
@@ -114,6 +145,7 @@ export default function Home() {
     let countdownLeft = 1.2;
     let countdownEndsAt = 0;
     let goFlash = 0;
+    let startLevel = 0;
     let difficultyLevel = 0;
     let levelFlash = 0;
     let levelMessage = "";
@@ -161,7 +193,25 @@ export default function Home() {
       const amplitude = Math.max(28, width / 2 - margin);
       const a = hash(knot) * amplitude;
       const b = hash(knot + 1) * amplitude;
-      return width / 2 + a + (b - a) * smooth;
+      let center = width / 2 + a + (b - a) * smooth;
+      // Past ~LEVEL 10 both top speed and road width have bottomed out, so keep
+      // ramping difficulty by weaving in extra turns. Continuous in worldY (no
+      // snap on level-up); startLevel folds the chosen difficulty into the ramp;
+      // the weave is capped to whatever on-screen headroom is left so the road
+      // never runs off the edge.
+      const progress = startLevel * 3000 + worldY;
+      const weaveGain = Math.min(1, Math.max(0, progress - 27000) / 24000);
+      if (weaveGain > 0) {
+        const headroom = Math.max(
+          0,
+          width / 2 - roadWidth() / 2 - 10 - Math.abs(center - width / 2)
+        );
+        center +=
+          Math.sin(worldY / 110) *
+          Math.min(amplitude * 0.5, headroom) *
+          weaveGain;
+      }
+      return center;
     };
 
     let safeTop = 0;
@@ -193,12 +243,14 @@ export default function Home() {
       setFeedbackSent(false);
       runNumber += 1;
       localStorage.setItem("stay-on-runs", String(runNumber));
+      startLevel = DIFFICULTY_START_LEVEL[difficultyRef.current];
       track("run_started");
+      setRunning(true);
       state = "countdown";
       countdownLeft = 1.2;
       countdownEndsAt = performance.now() + 1200;
       goFlash = 0;
-      difficultyLevel = 0;
+      difficultyLevel = startLevel;
       levelFlash = 0;
       levelMessage = "";
       distance = 0;
@@ -496,7 +548,7 @@ export default function Home() {
         }
       }
       if (state === "playing") {
-        const nextLevel = Math.floor(distance / 3000);
+        const nextLevel = startLevel + Math.floor(distance / 3000);
         if (nextLevel > difficultyLevel) {
           difficultyLevel = nextLevel;
           levelMessage =
@@ -521,6 +573,7 @@ export default function Home() {
           const metres = Math.floor(distance / 10);
           setLastDistance(metres);
           setShowFeedback(true);
+          setRunning(false);
           track("run_ended", metres);
           if (distance > best) {
             best = distance;
@@ -618,6 +671,21 @@ export default function Home() {
           </svg>
         )}
       </button>
+      {!running && !feedbackOpen && (
+        <div className="difficulty-select" role="group" aria-label="Difficulty">
+          {DIFFICULTY_LABELS.map(([value, label]) => (
+            <button
+              key={value}
+              type="button"
+              className={difficulty === value ? "is-selected" : ""}
+              aria-pressed={difficulty === value}
+              onClick={() => changeDifficulty(value)}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      )}
       {showFeedback && !feedbackOpen && (
         <button className="feedback-trigger" onClick={() => setFeedbackOpen(true)}>
           {feedbackSent ? "THANKS!" : "QUICK FEEDBACK"}
