@@ -7,7 +7,7 @@ Endless arcade night-driving game ("Stay On"), synthwave/outrun aesthetic. Nativ
 - **`Stay_On_iOS/mobile/`** — the active iOS app (Capacitor 7, React + Vite). This is what ships to TestFlight/App Store. App ID `com.trevorseitz.stayon`.
 - **`Stay_On_iOS/source/`** — parallel web build (Next.js/vinext-based), same game logic, **no ads/IAP** (gated out via `Capacitor.isNativePlatform()` checks since it's browser-only).
 - **`Music/`** — Suno-generated soundtrack masters (WAV, licensed for commercial use) plus OGG/MP3 conversions. `Neon Drift Circuit` is the official in-game soundtrack.
-- **`Source_Files/Stay_On_Source_v9/`** — an older archival snapshot of the web source, predates the music/IAP work in this doc. Not actively maintained; `Stay_On_iOS/source/` is the current one.
+- `Source_Files/` no longer exists — it held an archival `Stay_On_Source_v9/` snapshot (a near-duplicate of `Stay_On_iOS/source/`) plus two zipped snapshots; removed 2026-08-31 as stale. `git log` still has it if ever needed.
 - `Stay_On_iOS-oldish/` no longer exists — it was the pre-rename version of `Stay_On_iOS/`, fully removed as of the 2026-08-21 commit.
 
 ## Core game logic
@@ -89,4 +89,4 @@ Then in Organizer: **Distribute App → App Store Connect → Upload**, using th
 - No Git LFS — `Music/*.wav` masters (~117MB total) are committed as regular files by choice; be aware of repo size growth if more audio gets added.
 - Root `.gitignore` covers `node_modules/`, `dist/`, `build/`; `mobile/ios/.gitignore` covers `Pods/`, `DerivedData/`, etc.; `mobile/ios/App/.gitignore` covers `fastlane/.env`, `*.p8`, `vendor/bundle/`, `build/`, `*.ipa`. Verify any file is ignored with `git check-ignore -v <path>`.
 - Secrets live in git-ignored `.env` files, never committed: `mobile/.env` (`VITE_SENTRY_DSN`, `VITE_POSTHOG_*`, `SENTRY_ORG`/`SENTRY_PROJECT`/`SENTRY_AUTH_TOKEN`) and `mobile/ios/App/fastlane/.env` (`ASC_*`). `.env.example` files document the keys.
-- Two stale `Stay_On_iOS_Capacitor*.zip` exports sit untracked at repo root — old manual exports, safe to ignore or delete.
+- Root `.DS_Store` files and the orphaned root `package-lock.json` (no root `package.json`) were removed 2026-08-31. `.DS_Store` is git-ignored; Finder recreates it, ignore it.
