@@ -20,9 +20,9 @@
   ],
   "redirects": [
     {
-      "source": "/:path*",
+      "source": "/(.*)",
       "has": [{ "type": "host", "value": "www.stayondriving.com" }],
-      "destination": "https://stayondriving.com/:path*",
+      "destination": "https://stayondriving.com/$1",
       "permanent": true
     },
     { "source": "/privacy.html", "destination": "/privacy", "permanent": true },
