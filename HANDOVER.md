@@ -1,11 +1,12 @@
 # Stay On — Handover
 
-Endless arcade night-driving game ("Stay On"), synthwave/outrun aesthetic. Native iOS app via Capacitor, plus a parallel web build. Last updated 2026-08-30 (difficulty levels shipped to TestFlight; fastlane + export-compliance fixes).
+Endless arcade night-driving game ("Stay On"), synthwave/outrun aesthetic. Native iOS app via Capacitor, plus a parallel web build. Last updated 2026-08-31 (marketing site deployed live at stayondriving.com).
 
 ## Directory map
 
 - **`Stay_On_iOS/mobile/`** — the active iOS app (Capacitor 7, React + Vite). This is what ships to TestFlight/App Store. App ID `com.trevorseitz.stayon`.
 - **`Stay_On_iOS/source/`** — parallel web build (Next.js/vinext-based), same game logic, **no ads/IAP** (gated out via `Capacitor.isNativePlatform()` checks since it's browser-only).
+- **`Marketing/site/`** — static marketing site (plain HTML/CSS, no build step), **live in production at https://stayondriving.com**. See "Marketing site" section below.
 - **`Music/`** — Suno-generated soundtrack masters (WAV, licensed for commercial use) plus OGG/MP3 conversions. `Neon Drift Circuit` is the official in-game soundtrack.
 - `Source_Files/` no longer exists — it held an archival `Stay_On_Source_v9/` snapshot (a near-duplicate of `Stay_On_iOS/source/`) plus two zipped snapshots; removed 2026-08-31 as stale. `git log` still has it if ever needed.
 - `Stay_On_iOS-oldish/` no longer exists — it was the pre-rename version of `Stay_On_iOS/`, fully removed as of the 2026-08-21 commit.
@@ -42,6 +43,15 @@ Both `Stay_On_iOS/mobile/src/App.tsx` and `Stay_On_iOS/source/app/page.tsx` cont
 - The public App Store listing itself is not yet approved — version **1.0 is `WAITING_FOR_REVIEW`** (review submission submitted 2026-08-28), still pointing at **build 8**. Builds 9 and 10 exist and are `VALID` but deliberately *not* swapped in — the plan is to let build 8 clear review rather than reset the queue. Check App Store Connect → Distribution for the current state.
 - **TestFlight**: build **`202608300023`** (aka build 11, uploaded 2026-08-29, first to include the difficulty levels) is `IN_BETA_TESTING` internally / `READY_FOR_BETA_SUBMISSION` externally. Builds 8/9/10 are also in beta testing.
 - IAP screenshot for App Store review must be an exact native resolution from Apple's accepted list (1260×2736, 1290×2796, or 1320×2868 portrait) — a Simulator screenshot via Cmd+S on a Pro Max/Plus/Air-class device works well; a resized/AirDropped photo from a real device often doesn't match and gets rejected. Capture it on the **crash screen** (where the Remove Ads button lives), and run from **Xcode** (App scheme) so the StoreKit config loads and the button shows the price. The system "Sign in to Apple Account" payment sheet is Apple-generated and is *not* what the review screenshot should show.
+
+## Marketing site
+
+- **Live at https://stayondriving.com** (deployed 2026-08-31). Source in `Marketing/site/`, plus `Marketing/site/README.md`.
+- **Host**: Vercel, project `trevorseitz-ais-projects/stayondriving`, linked via `Marketing/site/.vercel/`. Static — no build step. Deploy with `vercel deploy --prod --cwd Marketing/site` (or `cd Marketing/site && vercel --prod`).
+- **DNS**: managed at Porkbun (Cloudflare-backed DNS UI). Apex `A → 76.76.21.21`, `www CNAME → cname.vercel-dns.com`. The old Cloudflare parking A records (162.159.143.30, 172.66.3.26) and the `*` wildcard CNAME were removed during cutover. MX/SPF for Porkbun email forwarding left intact.
+- **Routes**: `/` landing, `/privacy` (App Store Privacy Policy URL), `/support` (App Store Support URL). `.html` → clean-path 308 redirects. `www` → apex 308 redirect (host-scoped rule in `vercel.json`).
+- **Email**: `support@stayondriving.com` forwarding is set up (contact address on /privacy and /support).
+- **TODO once 1.0 is approved**: `index.html` App Store link points at `apps.apple.com/app/id6801365584` with a "Coming soon — 1.0 is in review" `<small>` caption. Confirm the ID, drop the caption, redeploy.
 
 ## Backlog / ideas for later
 
