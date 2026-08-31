@@ -19,6 +19,12 @@
     }
   ],
   "redirects": [
+    {
+      "source": "/:path*",
+      "has": [{ "type": "host", "value": "www.stayondriving.com" }],
+      "destination": "https://stayondriving.com/:path*",
+      "permanent": true
+    },
     { "source": "/privacy.html", "destination": "/privacy", "permanent": true },
     { "source": "/support.html", "destination": "/support", "permanent": true }
   ]
