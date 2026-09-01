@@ -45,6 +45,31 @@ const DIFFICULTY_LABELS: [Difficulty, string][] = [
   ["hard", "HARD"],
 ];
 
+type ScoreEntry = { distance: number; difficulty: Difficulty };
+const TOP_SCORES_KEY = "stay-on-top-scores";
+const isDifficulty = (value: unknown): value is Difficulty =>
+  value === "easy" || value === "medium" || value === "hard";
+
+const loadTopScores = (): ScoreEntry[] => {
+  try {
+    const raw = localStorage.getItem(TOP_SCORES_KEY);
+    if (!raw) return [];
+    const parsed: unknown = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .filter(
+        (entry): entry is ScoreEntry =>
+          !!entry &&
+          typeof entry === "object" &&
+          typeof (entry as ScoreEntry).distance === "number" &&
+          isDifficulty((entry as ScoreEntry).difficulty)
+      )
+      .slice(0, 5);
+  } catch {
+    return [];
+  }
+};
+
 export default function Home() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [showFeedback, setShowFeedback] = useState(false);
@@ -69,9 +94,20 @@ export default function Home() {
       (localStorage.getItem("stay-on-difficulty") as Difficulty | null) ?? "easy"
   );
   const [running, setRunning] = useState(false);
+  const [phase, setPhase] = useState<GameState>("ready");
+  const [bestMetres, setBestMetres] = useState(() =>
+    Math.floor(Number(localStorage.getItem("stay-on-best") || 0) / 10)
+  );
+  const [totalRuns, setTotalRuns] = useState(() =>
+    Number(localStorage.getItem("stay-on-runs") || 0)
+  );
+  const [topScores, setTopScores] = useState<ScoreEntry[]>(() => loadTopScores());
   const adFreeRef = useRef(adFree);
   const mutedRef = useRef(muted);
   const difficultyRef = useRef(difficulty);
+  const beginRef = useRef<() => void>(() => {});
+  const backToMenuRef = useRef<() => void>(() => {});
+  const resumeMusicRef = useRef<() => void>(() => {});
 
   useEffect(() => {
     difficultyRef.current = difficulty;
@@ -310,6 +346,7 @@ export default function Home() {
     let shake = 0;
     let best = Number(localStorage.getItem("stay-on-best") || 0);
     let runNumber = Number(localStorage.getItem("stay-on-runs") || 0);
+    let topScoresList = loadTopScores();
     let crashIsNewBest = false;
     let frameNow = performance.now();
 
@@ -390,6 +427,7 @@ export default function Home() {
       setFeedbackSent(false);
       runNumber += 1;
       localStorage.setItem("stay-on-runs", String(runNumber));
+      setTotalRuns(runNumber);
       startLevel = DIFFICULTY_START_LEVEL[difficultyRef.current];
       posthog.capture("run_started", {
         difficulty: difficultyRef.current,
@@ -397,6 +435,7 @@ export default function Home() {
       });
       setRunning(true);
       state = "countdown";
+      setPhase("countdown");
       countdownLeft = 1.2;
       countdownEndsAt = performance.now() + 1200;
       goFlash = 0;
@@ -410,13 +449,40 @@ export default function Home() {
       shake = 0;
       crashIsNewBest = false;
     };
+    beginRef.current = begin;
 
-    const startSteering = (pointerId?: number) => {
-      if (pointerId !== undefined) canvas.setPointerCapture?.(pointerId);
-      setSteeringPressed(true);
+    const resumeMusic = () => {
       const music = musicRef.current;
       if (music && music.paused) music.play().catch(() => {});
-      if (state === "ready" || state === "crashed") begin();
+    };
+    resumeMusicRef.current = resumeMusic;
+
+    const backToMenu = () => {
+      state = "ready";
+      setPhase("ready");
+      setRunning(false);
+      setShowFeedback(false);
+      setFeedbackOpen(false);
+      setFeedbackSent(false);
+      pressed = false;
+      setSteeringPressed(false);
+      steerVelocity = 0;
+      distance = 0;
+      playerX = roadCenter(0);
+      shake = 0;
+      goFlash = 0;
+      levelFlash = 0;
+      posthog.capture("returned_to_menu");
+    };
+    backToMenuRef.current = backToMenu;
+
+    const startSteering = (pointerId?: number) => {
+      // Menu and crash screens are now driven by explicit buttons (START /
+      // GO AGAIN / BACK TO MENU) rather than a tap-anywhere-on-canvas gesture.
+      if (state === "ready" || state === "crashed") return;
+      if (pointerId !== undefined) canvas.setPointerCapture?.(pointerId);
+      setSteeringPressed(true);
+      resumeMusic();
       pressed = true;
       if (state === "playing" && steerVelocity >= 0) {
         steerVelocity = -steerStrength() * 0.72;
@@ -684,6 +750,13 @@ export default function Home() {
       ctx.restore();
     };
 
+    // Menu (ready) state is a full DOM landing page now — this just dims the
+    // road/car rendered behind it, with no canvas-drawn title/instructions.
+    const dimBackdrop = () => {
+      ctx.fillStyle = "rgba(3,6,8,.70)";
+      ctx.fillRect(0, 0, width, height);
+    };
+
     const overlay = (title: string, subtitle: string) => {
       ctx.fillStyle = "rgba(3,6,8,.70)";
       ctx.fillRect(0, 0, width, height);
@@ -755,6 +828,7 @@ export default function Home() {
         countdownLeft = Math.max(0, (countdownEndsAt - now) / 1000);
         if (countdownLeft <= 0) {
           state = "playing";
+          setPhase("playing");
           goFlash = 0.55;
         }
       }
@@ -779,6 +853,7 @@ export default function Home() {
         const safe = roadWidth() / 2 - 17;
         if (Math.abs(playerX - roadCenter(distance)) > safe) {
           state = "crashed";
+          setPhase("crashed");
           shake = 11;
           playCrashSound();
           const metres = Math.floor(distance / 10);
@@ -797,7 +872,16 @@ export default function Home() {
           if (isNewBest) {
             best = distance;
             localStorage.setItem("stay-on-best", String(best));
+            setBestMetres(Math.floor(best / 10));
           }
+          topScoresList = [
+            ...topScoresList,
+            { distance: metres, difficulty: difficultyRef.current },
+          ]
+            .sort((a, b) => b.distance - a.distance)
+            .slice(0, 5);
+          localStorage.setItem(TOP_SCORES_KEY, JSON.stringify(topScoresList));
+          setTopScores(topScoresList);
           if (!adFreeRef.current && Capacitor.isNativePlatform()) {
             interstitialRuns += 1;
             localStorage.setItem("stay-on-interstitial-runs", String(interstitialRuns));
@@ -831,9 +915,9 @@ export default function Home() {
       drawRoadsideAds();
       drawCar();
       drawHud();
-      if (state === "ready") overlay("STAY ON", "TAP TO DRIVE");
+      if (state === "ready") dimBackdrop();
       if (state === "countdown") drawCountdown();
-      if (state === "crashed") overlay("CRASHED", "TAP FOR ONE MORE RUN");
+      if (state === "crashed") overlay("CRASHED", "");
       if (goFlash > 0) {
         ctx.textAlign = "center";
         ctx.fillStyle = "#d7ff3f";
@@ -938,7 +1022,82 @@ export default function Home() {
           ))}
         </div>
       )}
-      {!showFeedback && (
+      {phase === "ready" && !feedbackOpen && (
+        <>
+          <div className="menu-screen">
+            <div className="brand">
+              <div className="brand-icon">
+                <img src="/stayon-icon.png" alt="" />
+              </div>
+              <p className="brand-kicker">NIGHT DRIVE</p>
+              <h1>STAY ON</h1>
+            </div>
+
+            <div className="menu-leaderboard">
+              <div className="menu-leaderboard-head">
+                <h2>TOP 5</h2>
+                <span>Best Runs</span>
+              </div>
+              {Array.from({ length: 5 }).map((_, index) => {
+                const entry = topScores[index];
+                return (
+                  <div
+                    key={index}
+                    className={`menu-rank-row ${index === 0 ? "is-first" : ""}`}
+                  >
+                    <span className="rank-num">{index + 1}</span>
+                    <span className="rank-diff">
+                      {entry ? entry.difficulty.toUpperCase() : "—"}
+                    </span>
+                    <span className="rank-distance">
+                      {entry ? entry.distance : "—"}
+                      {entry && <span className="unit"> m</span>}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="menu-drives">
+              <span className="num">{totalRuns}</span>
+              <span className="label">Total Drives</span>
+            </div>
+          </div>
+          <button
+            type="button"
+            className="start-button"
+            onClick={() => {
+              resumeMusicRef.current?.();
+              beginRef.current?.();
+            }}
+          >
+            START
+          </button>
+          <p className="menu-instructions">HOLD = LEFT<br />RELEASE = RIGHT</p>
+        </>
+      )}
+      {phase === "crashed" && !feedbackOpen && (
+        <div className="run-actions">
+          <button
+            type="button"
+            className="go-again"
+            onClick={() => {
+              resumeMusicRef.current?.();
+              beginRef.current?.();
+            }}
+          >
+            GO AGAIN
+          </button>
+          <button
+            type="button"
+            className="back-to-menu"
+            onClick={() => backToMenuRef.current?.()}
+          >
+            BACK TO MENU
+          </button>
+        </div>
+      )}
+      {!showFeedback && phase !== "ready" && (
         <div className={`steering-control ${steeringPressed ? "is-pressed" : ""}`} aria-hidden="true">
           <span className="steering-spoke spoke-top" />
           <span className="steering-spoke spoke-left" />
