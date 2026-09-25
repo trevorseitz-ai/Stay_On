@@ -12,10 +12,10 @@
     "cap:open:ios": "cap open ios"
   },
   "dependencies": {
-    "@capacitor-community/admob": "^7.2.0",
-    "@capacitor/core": "^7.4.0",
-    "@capacitor/ios": "^7.4.0",
-    "@revenuecat/purchases-capacitor": "^11.3.2",
+    "@capacitor-community/admob": "^8.1.0",
+    "@capacitor/core": "^8.5.2",
+    "@capacitor/ios": "^8.5.2",
+    "@revenuecat/purchases-capacitor": "^13.6.1",
     "@sentry/capacitor": "^4.3.0",
     "@sentry/react": "10.69.0",
     "posthog-js": "^1.418.13",
@@ -23,7 +23,7 @@
     "react-dom": "^19.2.0"
   },
   "devDependencies": {
-    "@capacitor/cli": "^7.4.0",
+    "@capacitor/cli": "^8.5.2",
     "@sentry/vite-plugin": "^5.4.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",

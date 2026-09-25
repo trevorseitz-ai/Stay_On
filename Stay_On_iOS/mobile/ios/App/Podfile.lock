@@ -1,20 +1,20 @@
 PODS:
-  - Capacitor (7.6.8):
+  - Capacitor (8.5.2):
     - CapacitorCordova
-  - CapacitorCommunityAdmob (7.2.0):
+  - CapacitorCommunityAdmob (8.1.0):
     - Capacitor
-    - Google-Mobile-Ads-SDK (= 12.12.0)
-    - GoogleUserMessagingPlatform (= 3.0.0)
-  - CapacitorCordova (7.6.8)
-  - Google-Mobile-Ads-SDK (12.12.0):
+    - Google-Mobile-Ads-SDK (= 13.6.0)
+    - GoogleUserMessagingPlatform (~> 3.1)
+  - CapacitorCordova (8.5.2)
+  - Google-Mobile-Ads-SDK (13.6.0):
     - GoogleUserMessagingPlatform (>= 1.1)
-  - GoogleUserMessagingPlatform (3.0.0)
-  - PurchasesHybridCommon (17.25.0):
-    - RevenueCat (= 5.51.1)
-  - RevenueCat (5.51.1)
-  - RevenuecatPurchasesCapacitor (11.3.2):
+  - GoogleUserMessagingPlatform (3.1.0)
+  - PurchasesHybridCommon (19.3.1):
+    - RevenueCat (= 5.90.2)
+  - RevenueCat (5.90.2)
+  - RevenuecatPurchasesCapacitor (13.6.1):
     - Capacitor
-    - PurchasesHybridCommon (= 17.25.0)
+    - PurchasesHybridCommon (= 19.3.1)
   - Sentry (9.16.1):
     - Sentry/Core (= 9.16.1)
   - Sentry/Core (9.16.1)
@@ -50,17 +50,17 @@ EXTERNAL SOURCES:
     :path: "../../node_modules/@sentry/capacitor"
 
 SPEC CHECKSUMS:
-  Capacitor: ff6bf01336ac353098378828aff465095a89e459
-  CapacitorCommunityAdmob: 04498ca8d01a097aa7d9d80584094b6b3419ec3f
-  CapacitorCordova: e61ee8c40101b8cd011d0224261606a290c082cf
-  Google-Mobile-Ads-SDK: 4dde70a8c18d96b14f9548759b8cec6ecb0bc3e6
-  GoogleUserMessagingPlatform: f8d0cdad3ca835406755d0a69aa634f00e76d576
-  PurchasesHybridCommon: 6a79a873ab52f777bfa36e9516f3fcd84d3b3428
-  RevenueCat: eab035bbab271faccfef5c36eaff2a1ffef14dc0
-  RevenuecatPurchasesCapacitor: fa376932f9967c7ab4b5eac477e824d90393b91a
+  Capacitor: 89067779e14fb7ea56af07b4817f45d1f0c2a269
+  CapacitorCommunityAdmob: 6af78978278c429d21cb6ac604acefe7d99c054d
+  CapacitorCordova: 5bec5648cbd09a176ce34ce5e7b6cdabb2c8a327
+  Google-Mobile-Ads-SDK: 6e501ace4af8d63e967bd45497c8b2b05821163d
+  GoogleUserMessagingPlatform: befe603da6501006420c206222acd449bba45a9c
+  PurchasesHybridCommon: c364d4198150bf4027b00fcada9b4ddc280df108
+  RevenueCat: c44e15b3ee88506da1fdf537c62a6c239cc41b21
+  RevenuecatPurchasesCapacitor: 961e591ce1f85e55ce3de9d088278d6c6e8386a3
   Sentry: e5d82a3c1f2d951f75c04c57215a0abb1facbd51
   SentryCapacitor: 0561def7ada7e47d0437324e7aa3db60d52bfe40
 
-PODFILE CHECKSUM: 37da28ca9dd8a97114bc7c88b8bd0bdf55448857
+PODFILE CHECKSUM: 03cc2ec8789f59feb87861ea63049ea4a021736f
 
 COCOAPODS: 1.17.0
