@@ -6,10 +6,10 @@ Endless arcade night-driving game ("Stay On"), synthwave/outrun aesthetic. Nativ
 
 - **App Review**: version **1.0, build `202609231310`**, submitted **together with** the Remove Ads IAP (`com.trevorseitz.stayon.removeads`) on 2026-09-25. Both `WAITING_FOR_REVIEW` (IAP state confirmed via RevenueCat `get-product-store-state`). No action needed until Apple replies.
 - **Why it was rejected (2026-09-23, Guideline 2.1(b))**: the app referenced Remove Ads but the IAP had never been submitted. An app's **first** IAP can only be submitted *with* an app version — RevenueCat's `submit-products-to-store` skips it for that reason. See "App Store submission gotchas" below for the App Store Connect flow that finally worked.
-- **AdMob**: ads currently **do not load** on device — `requestConsentInfo` fails ("Request consent info failed") and interstitials return "Publisher data not found". Cause is account-side: AdMob setup is incomplete (**payment verification pending with Google**). Not related to the Capacitor 8 upgrade (ads loaded on the upgraded build earlier the same day; app ID/ad unit IDs unchanged).
+- **AdMob**: ads currently **do not load** on device — `requestConsentInfo` fails ("Request consent info failed") and interstitials return "Publisher data not found". **Corrected 2026-09-26**: this is *not* a payment-verification block — AdMob Payments → Verification confirmed identity verification only triggers once earnings reach a threshold, and earnings are $0.00, so nothing is pending there. The real blocker is that AdMob **App settings → App store details** shows unlinked ("Add") and **Approval status: Requires review**, which can't be resolved until Apple approves the 1.0 resubmission and the App Store listing exists to link. The **Privacy & messaging → European regulations** consent message's **Publish** button is also greyed out, consistent with the app itself still being in "Requires review." Not related to the Capacitor 8 upgrade (ads loaded on the upgraded build earlier the same day; app ID/ad unit IDs unchanged).
 - **Next steps, in order**:
-  1. When Google verifies payments: AdMob → Privacy & messaging → publish the **European regulations** consent message for Stay On Driving, privacy URL `https://stayondriving.com/privacy`.
-  2. When Apple approves 1.0: AdMob → Apps → Stay On Driving → App settings → App store details → **Add** (link the App Store listing). Then AdMob reviews the app (a few days) until it shows **Ready**.
+  1. When Apple approves 1.0: AdMob → Apps → Stay On Driving → App settings → App store details → **Add** (link the App Store listing). Then AdMob reviews the app (a few days) until it shows **Ready**.
+  2. Once the app clears review: AdMob → Privacy & messaging → European regulations → Settings tab → select Stay On Driving → enter Privacy policy URL `https://stayondriving.com/privacy` → Messages tab → publish the consent message (Publish was greyed out on 2026-09-26 while the app was still "Requires review").
   3. Then reinstall from Xcode on a device and confirm banner + interstitial load. If not, grab `AdMob initialization failed` / `Interstitial prepare failed` lines from the Xcode console.
   4. After approval: in `mobile/src/App.tsx` `showBannerAd`, stop a failed consent request from aborting the banner attempt entirely. Keep it privacy-correct: use the consent SDK's `canRequestAds`, don't just skip consent.
   5. Marketing site TODO (below): swap the "Coming soon" App Store caption once 1.0 is live.
@@ -91,6 +91,33 @@ Both `Stay_On_iOS/mobile/src/App.tsx` and `Stay_On_iOS/source/app/page.tsx` cont
 - **Routes**: `/` landing, `/privacy` (App Store Privacy Policy URL), `/support` (App Store Support URL). `.html` → clean-path 308 redirects. `www` → apex 308 redirect (host-scoped rule in `vercel.json`).
 - **Email**: `support@stayondriving.com` forwarding is set up (contact address on /privacy and /support).
 - **TODO once 1.0 is approved**: `index.html` App Store link points at `apps.apple.com/app/id6801365584` with a "Coming soon — 1.0 is in review" `<small>` caption. Confirm the ID, drop the caption, redeploy.
+
+## Marketing: AI team pilot (added 2026-10-05)
+
+Stay On is the **first pilot** for the AI marketing team designed by the Claude/Codex/Gemini council.
+- **Plan:** `~/Projects/AI_Team/council/CONSENSUS-PLAN.md`.
+- **System handover:** `~/Projects/AI_Team/HANDOVER.md`.
+- **Owner checklist:** `~/Projects/AI_Team/NEEDS-FROM-TREVOR.md`.
+
+**Status:** The plan has been agreed. Nothing is built or connected yet, and nothing has been posted.
+
+**What the pilot does with this app:**
+- **Before Apple approves:** account audit, a dated fact sheet (what may be claimed), a check of the App Store page, and 3 gameplay clips drafted. Clips use real gameplay and the game's own audio only. No platform music, faceless, and no mention of the developer.
+- **After approval:**
+  - The AdMob steps 1–3 in *Current status*.
+  - Then the locked 3-clip batch goes to Trevor for approval.
+  - Then publishing through Buffer Free.
+- **Measurement:** PostHog `run_started`/`run_ended`, `ad_free_purchase_*` and `purchases_restored` are being ingested.
+  - Treat the 9/23–9/26 events (about 10 users) as test/review traffic and exclude them from the baseline.
+  - Sandbox purchases don't count as conversions.
+  - Ad revenue counts as $0 until a device test passes.
+
+**Social handles (public check, 2026-10-05):**
+- Instagram **@stayondriving** exists and is empty. It's probably Trevor's (needs confirming).
+- TikTok **@stayon** has 47 followers and no videos. Unknown owner.
+- `stayondriving` appears available on TikTok, YouTube and X.
+- The site links to no social accounts.
+- Details: `~/Projects/AI_Team/council/social-audit-public-2026-10-05.md`.
 
 ## Backlog / ideas for later
 
