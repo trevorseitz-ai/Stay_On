@@ -92,6 +92,15 @@ Both `Stay_On_iOS/mobile/src/App.tsx` and `Stay_On_iOS/source/app/page.tsx` cont
 - **Email**: `support@stayondriving.com` forwarding is set up (contact address on /privacy and /support).
 - **TODO once 1.0 is approved**: `index.html` App Store link points at `apps.apple.com/app/id6801365584` with a "Coming soon — 1.0 is in review" `<small>` caption. Confirm the ID, drop the caption, redeploy.
 
+## Analytics build_channel tag (added 2026-10-08, ships after 1.0)
+
+Every PostHog event carries `build_channel`, so launch metrics can exclude test installs. The same binary goes from TestFlight to the App Store, which is why the value is decided at runtime.
+
+- **Native side:** `ios/App/App/BuildChannel.swift` adds `BuildChannelPlugin`, which reads `AppTransaction.shared` environment (production→`appstore`, sandbox→`testflight`, xcode→`xcode`; simulator→`simulator`). It's registered by `MainViewController` (a `CAPBridgeViewController` subclass). **`Main.storyboard`'s view controller is now `MainViewController` (module App)**, so if you regenerate the storyboard, keep that.
+- **Web side:** `src/main.tsx` registers `build_channel` (`dev` / `web` / `native-pending`, then the native answer, or `unknown`).
+- **Verified:** Release simulator build through `App.xcworkspace` succeeded. Not yet run on a device.
+- **1.0 (in review) doesn't include this.** Include it in 1.0.1. 1.0 events have no tag, so filter those by release date.
+
 ## Marketing: AI team pilot (added 2026-10-05)
 
 Stay On is the **first pilot** for the AI marketing team designed by the Claude/Codex/Gemini council.
