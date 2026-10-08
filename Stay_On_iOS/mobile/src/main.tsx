@@ -1,5 +1,6 @@
 import { createRoot } from "react-dom/client";
 import posthog from "posthog-js";
+import { Capacitor, registerPlugin } from "@capacitor/core";
 import * as Sentry from "@sentry/capacitor";
 import * as SentryReact from "@sentry/react";
 import App from "./App";
@@ -32,6 +33,21 @@ if (posthogKey && posthogHost) {
       capture_console_errors: false,
     },
   });
+
+  // Tag every event with where this build came from, so launch metrics can exclude
+  // test installs. Native builds ask BuildChannelPlugin (ios/App/App/BuildChannel.swift);
+  // events sent before it answers carry "native-pending".
+  const BuildChannel = registerPlugin<{ get(): Promise<{ channel: string }> }>("BuildChannel");
+  if (import.meta.env.DEV) {
+    posthog.register({ build_channel: "dev" });
+  } else if (!Capacitor.isNativePlatform()) {
+    posthog.register({ build_channel: "web" });
+  } else {
+    posthog.register({ build_channel: "native-pending" });
+    BuildChannel.get()
+      .then(({ channel }) => posthog.register({ build_channel: channel }))
+      .catch(() => posthog.register({ build_channel: "unknown" }));
+  }
 } else if (import.meta.env.DEV) {
   const missingVariable = posthogKey ? "VITE_POSTHOG_HOST" : "VITE_POSTHOG_KEY";
   throw new Error(
