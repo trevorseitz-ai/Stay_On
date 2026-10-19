@@ -1,14 +1,23 @@
 # Stay On — Handover
 
-Endless arcade night-driving game ("Stay On"), synthwave/outrun aesthetic. Native iOS app via Capacitor, plus a parallel web build. Last updated 2026-09-25 (1.0 resubmitted with the Remove Ads IAP after a 2.1(b) rejection; Capacitor 8 upgrade; marketing site deploy fixed; `app-ads.txt` live).
+Endless arcade night-driving game ("Stay On"), synthwave/outrun aesthetic. Native iOS app via Capacitor, plus a parallel web build. Last updated 2026-10-19 (build `202609231310` rejected for an iOS 27 launch crash; fixed by adopting the UIScene lifecycle; new build `202610151246` uploaded, resubmission pending).
 
-## Current status (2026-09-25) — start here
+## Current status (2026-10-19) — start here
 
-- **App Review**: version **1.0, build `202609231310`**, submitted **together with** the Remove Ads IAP (`com.trevorseitz.stayon.removeads`) on 2026-09-25. Both `WAITING_FOR_REVIEW` (IAP state confirmed via RevenueCat `get-product-store-state`). No action needed until Apple replies.
-- **Why it was rejected (2026-09-23, Guideline 2.1(b))**: the app referenced Remove Ads but the IAP had never been submitted. An app's **first** IAP can only be submitted *with* an app version — RevenueCat's `submit-products-to-store` skips it for that reason. See "App Store submission gotchas" below for the App Store Connect flow that finally worked.
+- **App Review**: build `202609231310` was **rejected because it crashed at launch on iOS 27.0**. Without a scene manifest, UIKit traps at launch (`_UIApplicationEvaluateRuntimeIssueForNoSceneLifecycleAdoption`). The fix is PR #11 (commit `9917b14`), described in "iOS 27 scene lifecycle" below.
+- **New build uploaded 2026-10-15**: **1.0 (`202610151246`)**, built from `main` @ `57eac24`. Build `202610131852` (the number in PR #11) was **already used** in App Store Connect, so the upload was rejected as a duplicate and the build number was bumped. **The bump is not committed yet.** `project.pbxproj` is modified in the working tree, so commit it on a branch and open a PR.
+- **Verified before upload**: on 2026-10-15 the Debug build launched on the **iOS 27.0 simulator** (iPhone 18 Pro) and reached the home screen. It was still running after 12 seconds with no crash report. The archived Release `Info.plist` contains `UIApplicationSceneManifest` → `App.SceneDelegate`. **Not yet run on a real iOS 27 device.** The 2026-10-15 device test was on iOS 26.6.2, which never crashed and so proves nothing about the fix. The old build was not run on the simulator to confirm the simulator reproduces the crash.
+- **Remove Ads IAP is `READY_TO_SUBMIT`**: RevenueCat `get-product-store-state` reported this on 2026-10-19, so the IAP is not in review. It's still this app's **first** IAP, so it must be resubmitted **in the same submission as the version**. Use the 2-item flow in "App Store submission gotchas". Submitting the version alone risks another 2.1(b) rejection.
+- **Earlier rejection (2026-09-23, Guideline 2.1(b))**: the app referenced Remove Ads but the IAP had never been submitted. An app's **first** IAP can only be submitted *with* an app version — RevenueCat's `submit-products-to-store` skips it for that reason. See "App Store submission gotchas" below for the App Store Connect flow that finally worked.
+- **Resubmission steps (as of 2026-10-19 it is unknown whether any were done)**:
+  1. Commit the build-number bump (see above).
+  2. App Store Connect → version 1.0 → swap in build **`202610151246`**.
+  3. Add the Remove Ads IAP to the same submission. Confirm **2 Items Submitted**.
+  4. Reply in Resolution Center: the iOS 27 launch crash was fixed by adopting the UIScene lifecycle.
+  5. Optional, before submitting: install from TestFlight on a real iOS 27 device.
 - **AdMob**: ads currently **do not load** on device — `requestConsentInfo` fails ("Request consent info failed") and interstitials return "Publisher data not found". **Corrected 2026-09-26**: this is *not* a payment-verification block — AdMob Payments → Verification confirmed identity verification only triggers once earnings reach a threshold, and earnings are $0.00, so nothing is pending there. The real blocker is that AdMob **App settings → App store details** shows unlinked ("Add") and **Approval status: Requires review**, which can't be resolved until Apple approves the 1.0 resubmission and the App Store listing exists to link. The **Privacy & messaging → European regulations** consent message's **Publish** button is also greyed out, consistent with the app itself still being in "Requires review." Not related to the Capacitor 8 upgrade (ads loaded on the upgraded build earlier the same day; app ID/ad unit IDs unchanged).
-- **Next steps, in order**:
-  1. When Apple approves 1.0: AdMob → Apps → Stay On Driving → App settings → App store details → **Add** (link the App Store listing). Then AdMob reviews the app (a few days) until it shows **Ready**.
+- **After Apple approves 1.0, in order**:
+  1. AdMob → Apps → Stay On Driving → App settings → App store details → **Add** (link the App Store listing). Then AdMob reviews the app (a few days) until it shows **Ready**.
   2. Once the app clears review: AdMob → Privacy & messaging → European regulations → Settings tab → select Stay On Driving → enter Privacy policy URL `https://stayondriving.com/privacy` → Messages tab → publish the consent message (Publish was greyed out on 2026-09-26 while the app was still "Requires review").
   3. Then reinstall from Xcode on a device and confirm banner + interstitial load. If not, grab `AdMob initialization failed` / `Interstitial prepare failed` lines from the Xcode console.
   4. After approval: in `mobile/src/App.tsx` `showBannerAd`, stop a failed consent request from aborting the banner attempt entirely. Keep it privacy-correct: use the consent SDK's `canRequestAds`, don't just skip consent.
@@ -36,7 +45,7 @@ Both `Stay_On_iOS/mobile/src/App.tsx` and `Stay_On_iOS/source/app/page.tsx` cont
   - The button label shows the localized store price when the offering loads (`REMOVE ADS · $2.99`, from the package's `product.priceString`), falling back to a plain `REMOVE ADS` label. Price is fetched once during `initPurchases` into the `adFreePrice` state.
   - As of 2026-08-29: package lookup goes through an `adFreePackage()` helper (`offering.lifetime ?? availablePackages[0] ?? null`) so a dashboard slot mismatch can't disable the button; `Purchases.setLogLevel` is set (DEBUG in dev, INFO in prod) so TestFlight offering failures are diagnosable in device logs.
   - `ios/App/StayOn.storekit` + the committed shared `App.xcscheme` (`ios/App/App.xcodeproj/xcshareddata/xcschemes/`) let the **simulator** load the offering and run a StoreKit *test* purchase — but only when launched from Xcode (Run the App scheme). A plain `xcodebuild`/`simctl` launch does not apply the StoreKit config, so the button falls back to the label with no price there. Release builds ignore the `.storekit` file entirely.
-  - **Sandbox testing on a real device requires the StoreKit config OFF** (Edit Scheme → Run → Options → StoreKit Configuration = None). With it on, purchases go to Xcode's local fake store (`StoreKitTest_Transaction_…` IDs in RevenueCat), and deleting the app wipes them, so "Restore purchase" then reports "Nothing to restore". On 2026-09-25 this was turned off in the working copy of the shared `App.xcscheme` **but deliberately not committed**, so the committed scheme still references `StayOn.storekit`.
+  - **Sandbox testing on a real device requires the StoreKit config OFF** (Edit Scheme → Run → Options → StoreKit Configuration = None). With it on, purchases go to Xcode's local fake store (`StoreKitTest_Transaction_…` IDs in RevenueCat), and deleting the app wipes them, so "Restore purchase" then reports "Nothing to restore". On 2026-09-25 this was turned off in the working copy of the shared `App.xcscheme` **but deliberately not committed**. That working-copy edit was **reverted on 2026-10-15**, along with a RevenueCat build entry Xcode had added on its own. The scheme now matches the committed version, which references `StayOn.storekit`, so turn the StoreKit config off again before any device sandbox test.
   - The sandbox Apple account on the dev iPhone **already owns** Remove Ads (real sandbox purchase 2026-08-23, transaction `2000001225677784`). So tapping Remove Ads there shows **no payment sheet**: StoreKit returns the existing purchase and the button disappears. That's correct behavior. To see the sheet again, App Store Connect → Users and Access → Sandbox → tester → Clear Purchase History (or use a new tester). The direct URL for sandbox testers is `https://appstoreconnect.apple.com/access/users/sandbox`.
   - Verified 2026-09-25 on Capacitor 8: fresh install shows ads-free=false + $2.99 offering; restore after reinstall re-grants `ad_free`.
 - **Steering hint on crash screen**: the decorative steering-wheel hint (`.steering-control` + "PLACE THUMB HERE") is now hidden whenever `showFeedback` is true, so it no longer overlaps the Quick Feedback / Remove Ads buttons on the crash screen. Mobile-only change (`mobile/src/App.tsx`).
@@ -58,11 +67,21 @@ Both `Stay_On_iOS/mobile/src/App.tsx` and `Stay_On_iOS/source/app/page.tsx` cont
 - **Why**: this Mac now has **Xcode 27** (the only Xcode installed). RevenueCat iOS 5.51.1 (from `purchases-capacitor` 11.3.2, the last Capacitor-7 release) fails to compile under it: `PaywallColor` "Invalid redeclaration of synthesized memberwise init(stringRepresentation:)" and "Ambiguous use of 'init'". The fix only ships in `purchases-capacitor` 12+, and those require Capacitor 8.
 - **Versions**: `@capacitor/core|ios|cli` 8.5.2 · `@capacitor-community/admob` 8.1.0 (Google Mobile Ads 13.6.0) · `@revenuecat/purchases-capacitor` 13.6.1 (RevenueCat 5.90.2, PurchasesHybridCommon 19.3.1) · **Sentry unchanged** (`@sentry/capacitor` 4.3.0 supports Cap ≥3; keep the `@sentry/react` 10.69.0 pin).
 - No app-code changes were needed: the RevenueCat calls the app uses kept the same signatures, and `tsc` passes with AdMob 8.
-- **`npx cap sync ios` on Capacitor 8 runs an Xcode clean** that fails if a non-Xcode `mobile/ios/App/build/` folder exists ("Could not delete … because it was not created by the build system"). The old 2026-09-01 `App.ipa` + dSYM that lived there were moved to `~/Projects/Stay_On_build_backups/2026-09-01/`. Keep fastlane's `build` lane output in mind: if it writes `./build` there again, move it before syncing.
+- **`npx cap sync ios` on Capacitor 8 runs an Xcode clean** that fails if a non-Xcode `mobile/ios/App/build/` folder exists ("Could not delete … because it was not created by the build system"). The old 2026-09-01 `App.ipa` + dSYM that lived there were moved to `~/Projects/Stay_On_build_backups/2026-09-01/`. Keep fastlane's `build` lane output in mind: if it writes `./build` there again, move it before syncing. (On 2026-10-15 a `build/` folder was back and the clean step failed again. It's harmless: the sync still copied `dist` into `ios/App/App/public`. Confirm with `diff dist/index.html ios/App/App/public/index.html`.)
+
+## iOS 27 scene lifecycle (2026-10-13, PR #11)
+
+- **Why**: iOS 27 crashes any app at launch that hasn't adopted the UIScene lifecycle. Apple rejected build `202609231310` for this.
+- **What changed**:
+  - `ios/App/App/SceneDelegate.swift` forwards scene connect, `openURL` and universal-link events to Capacitor's `SceneDelegateProxy`, so the App plugin still receives deep links.
+  - `Info.plist` gained `UIApplicationSceneManifest`. It points at `App.SceneDelegate`, loads `Main.storyboard`, and has `UIApplicationSupportsMultipleScenes = false`.
+  - The app-level `UIMainStoryboardFile` was removed because the scene now loads the storyboard.
+- **Keep**: the storyboard's view controller is still `MainViewController`, which the build_channel plugin needs. If `cap add ios` or a Capacitor template change ever regenerates `Info.plist`, re-add the scene manifest.
 
 ## App Store submission gotchas (learned 2026-09-25)
 
-- **Build numbers** are UTC-ish timestamps (`YYYYMMDDHHMM`), in `CURRENT_PROJECT_VERSION` in `App.xcodeproj/project.pbxproj` (Debug + Release). Current: `202609231310`.
+- **Build numbers** are UTC-ish timestamps (`YYYYMMDDHHMM`), in `CURRENT_PROJECT_VERSION` in `App.xcodeproj/project.pbxproj` (Debug + Release). Current: `202610151246`, uploaded but not committed as of 2026-10-19. **A build number can't be reused once uploaded**, even if that build was never submitted. Before archiving, check that the number in `project.pbxproj` hasn't already been uploaded: `202610131852` had been, and the export failed with "bundle version must be higher than the previously uploaded version".
+- **Test launch on the newest iOS before submitting.** Apple reviews on the latest iOS (27.0 as of 2026-10), not the version on the dev phone. The Xcode 27 install has an iOS 27.0 simulator runtime.
 - **The first IAP must be in the same review submission as an app version.** The flow that worked:
   1. If the version is stuck in a rejected or unresolved submission, **remove it from review first**. Use the "remove this version" link on the version page, or remove it on the App Review submission page. The version becomes *Developer Rejected*.
   2. Sidebar → **In-App Purchases** → Edit → tick the IAP → **Add for Review**. This creates a *Draft Submission*. Its "add an app version" warning is expected.
@@ -75,7 +94,7 @@ Both `Stay_On_iOS/mobile/src/App.tsx` and `Stay_On_iOS/source/app/page.tsx` cont
 
 ## Remaining before wide release
 
-- See **Current status** at the top. Older history: 1.0 was first submitted 2026-08-28 (build 8), then build `202609011900` was rejected 2026-09-23 for the unsubmitted IAP.
+- See **Current status** at the top. Older history: 1.0 was first submitted 2026-08-28 (build 8). Build `202609011900` was rejected 2026-09-23 for the unsubmitted IAP. Build `202609231310` (submitted with the IAP 2026-09-25) was then rejected for the iOS 27 launch crash.
 - IAP screenshot for App Store review must be an exact native resolution from Apple's accepted list (1260×2736, 1290×2796, or 1320×2868 portrait) — a Simulator screenshot via Cmd+S on a Pro Max/Plus/Air-class device works well; a resized/AirDropped photo from a real device often doesn't match and gets rejected. Capture it on the **crash screen** (where the Remove Ads button lives), and run from **Xcode** (App scheme) so the StoreKit config loads and the button shows the price. The system "Sign in to Apple Account" payment sheet is Apple-generated and is *not* what the review screenshot should show.
 
 ## Marketing site
@@ -99,7 +118,7 @@ Every PostHog event carries `build_channel`, so launch metrics can exclude test 
 - **Native side:** `ios/App/App/BuildChannel.swift` adds `BuildChannelPlugin`, which reads `AppTransaction.shared` environment (production→`appstore`, sandbox→`testflight`, xcode→`xcode`; simulator→`simulator`). It's registered by `MainViewController` (a `CAPBridgeViewController` subclass). **`Main.storyboard`'s view controller is now `MainViewController` (module App)**, so if you regenerate the storyboard, keep that.
 - **Web side:** `src/main.tsx` registers `build_channel` (`dev` / `web` / `native-pending`, then the native answer, or `unknown`).
 - **Verified:** Release simulator build through `App.xcworkspace` succeeded. Not yet run on a device.
-- **1.0 (in review) doesn't include this.** Include it in 1.0.1. 1.0 events have no tag, so filter those by release date.
+- **Now ships in 1.0.** PR #9 merged before the iOS 27 fix, so build `202610151246` includes it. This replaces the earlier plan to hold it for 1.0.1. Events from the 9/23–9/26 review/test installs have no tag, so filter those by date.
 
 ## Marketing: AI team pilot (added 2026-10-05)
 
@@ -149,6 +168,19 @@ npx cap sync ios   # copy assets + sync native deps into ios/App
 Signing is already set up (Apple Distribution cert for team `78H427V6FY`, Apple ID signed into Xcode on this Mac).
 
 Build `202609231310` was archived and uploaded manually from Xcode 27 (Any iOS Device → Product → Archive → Distribute App → App Store Connect → Upload). Before archiving: quit/reopen `App.xcworkspace` after any `pod install`, then Product → Clean Build Folder.
+
+Build `202610151246` was archived and uploaded **entirely from the CLI** (no Organizer) on 2026-10-15, using the Apple ID already signed into Xcode:
+
+```bash
+xcodebuild -workspace App.xcworkspace -scheme App -configuration Release \
+  -destination 'generic/platform=iOS' -archivePath <path>/StayOn.xcarchive \
+  -allowProvisioningUpdates archive
+xcodebuild -exportArchive -archivePath <path>/StayOn.xcarchive \
+  -exportOptionsPlist <path>/ExportOptions.plist -exportPath <path>/export \
+  -allowProvisioningUpdates
+```
+
+`ExportOptions.plist` (not committed) contains: `method` = `app-store-connect`, `destination` = `upload`, `teamID` = `78H427V6FY`, `signingStyle` = `automatic`, `uploadSymbols` = true, `manageAppVersionAndBuildNumber` = false. The upload is done when the log shows `Upload succeeded`.
 
 **Preferred (2026-08-29 onward) — fastlane:**
 
