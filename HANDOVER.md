@@ -1,20 +1,15 @@
 # Stay On — Handover
 
-Endless arcade night-driving game ("Stay On"), synthwave/outrun aesthetic. Native iOS app via Capacitor, plus a parallel web build. Last updated 2026-10-19 (build `202609231310` rejected for an iOS 27 launch crash; fixed by adopting the UIScene lifecycle; new build `202610151246` uploaded, resubmission pending).
+Endless arcade night-driving game ("Stay On"), synthwave/outrun aesthetic. Native iOS app via Capacitor, plus a parallel web build. Last updated 2026-10-23 (build `202609231310` rejected for an iOS 27 launch crash; fixed by adopting the UIScene lifecycle; build `202610151246` resubmitted with the Remove Ads IAP on 2026-10-23, awaiting review).
 
-## Current status (2026-10-19) — start here
+## Current status (2026-10-23) — start here
 
 - **App Review**: build `202609231310` was **rejected because it crashed at launch on iOS 27.0**. Without a scene manifest, UIKit traps at launch (`_UIApplicationEvaluateRuntimeIssueForNoSceneLifecycleAdoption`). The fix is PR #11 (commit `9917b14`), described in "iOS 27 scene lifecycle" below.
-- **New build uploaded 2026-10-15**: **1.0 (`202610151246`)**, built from `main` @ `57eac24`. Build `202610131852` (the number in PR #11) was **already used** in App Store Connect, so the upload was rejected as a duplicate and the build number was bumped. **The bump is not committed yet.** `project.pbxproj` is modified in the working tree, so commit it on a branch and open a PR.
+- **New build uploaded 2026-10-15**: **1.0 (`202610151246`)**, built from `main` @ `57eac24`. Build `202610131852` (the number in PR #11) was **already used** in App Store Connect, so the upload was rejected as a duplicate and the build number was bumped. The bump was committed in PR #12 (commit `a21f3c6`, merged to `main` as `edbd494`).
 - **Verified before upload**: on 2026-10-15 the Debug build launched on the **iOS 27.0 simulator** (iPhone 18 Pro) and reached the home screen. It was still running after 12 seconds with no crash report. The archived Release `Info.plist` contains `UIApplicationSceneManifest` → `App.SceneDelegate`. **Not yet run on a real iOS 27 device.** The 2026-10-15 device test was on iOS 26.6.2, which never crashed and so proves nothing about the fix. The old build was not run on the simulator to confirm the simulator reproduces the crash.
-- **Remove Ads IAP is `READY_TO_SUBMIT`**: RevenueCat `get-product-store-state` reported this on 2026-10-19, so the IAP is not in review. It's still this app's **first** IAP, so it must be resubmitted **in the same submission as the version**. Use the 2-item flow in "App Store submission gotchas". Submitting the version alone risks another 2.1(b) rejection.
+- **Resubmitted 2026-10-23**: version 1.0 (build `202610151246`) and the Remove Ads IAP ("Stay On RevenueCat", `com.trevorseitz.stayon.removeads`) were submitted together, **2 items** in one submission. Now waiting for App Review. The iOS 27 fix explanation was meant to go in the version's App Review **Notes**, because the old submission's message thread closed before a reply was sent. Check that the line is there if Apple asks.
 - **Earlier rejection (2026-09-23, Guideline 2.1(b))**: the app referenced Remove Ads but the IAP had never been submitted. An app's **first** IAP can only be submitted *with* an app version — RevenueCat's `submit-products-to-store` skips it for that reason. See "App Store submission gotchas" below for the App Store Connect flow that finally worked.
-- **Resubmission steps (as of 2026-10-19 it is unknown whether any were done)**:
-  1. Commit the build-number bump (see above).
-  2. App Store Connect → version 1.0 → swap in build **`202610151246`**.
-  3. Add the Remove Ads IAP to the same submission. Confirm **2 Items Submitted**.
-  4. Reply in Resolution Center: the iOS 27 launch crash was fixed by adopting the UIScene lifecycle.
-  5. Optional, before submitting: install from TestFlight on a real iOS 27 device.
+- **If 1.0 is rejected again**: read the App Review message, fix the issue, and resubmit both items together using the flow in "App Store submission gotchas". A TestFlight install on a real iOS 27 device is still untested and worth doing first if the rejection is another crash.
 - **AdMob**: ads currently **do not load** on device — `requestConsentInfo` fails ("Request consent info failed") and interstitials return "Publisher data not found". **Corrected 2026-09-26**: this is *not* a payment-verification block — AdMob Payments → Verification confirmed identity verification only triggers once earnings reach a threshold, and earnings are $0.00, so nothing is pending there. The real blocker is that AdMob **App settings → App store details** shows unlinked ("Add") and **Approval status: Requires review**, which can't be resolved until Apple approves the 1.0 resubmission and the App Store listing exists to link. The **Privacy & messaging → European regulations** consent message's **Publish** button is also greyed out, consistent with the app itself still being in "Requires review." Not related to the Capacitor 8 upgrade (ads loaded on the upgraded build earlier the same day; app ID/ad unit IDs unchanged).
 - **After Apple approves 1.0, in order**:
   1. AdMob → Apps → Stay On Driving → App settings → App store details → **Add** (link the App Store listing). Then AdMob reviews the app (a few days) until it shows **Ready**.
@@ -80,7 +75,7 @@ Both `Stay_On_iOS/mobile/src/App.tsx` and `Stay_On_iOS/source/app/page.tsx` cont
 
 ## App Store submission gotchas (learned 2026-09-25)
 
-- **Build numbers** are UTC-ish timestamps (`YYYYMMDDHHMM`), in `CURRENT_PROJECT_VERSION` in `App.xcodeproj/project.pbxproj` (Debug + Release). Current: `202610151246`, uploaded but not committed as of 2026-10-19. **A build number can't be reused once uploaded**, even if that build was never submitted. Before archiving, check that the number in `project.pbxproj` hasn't already been uploaded: `202610131852` had been, and the export failed with "bundle version must be higher than the previously uploaded version".
+- **Build numbers** are UTC-ish timestamps (`YYYYMMDDHHMM`), in `CURRENT_PROJECT_VERSION` in `App.xcodeproj/project.pbxproj` (Debug + Release). Current: `202610151246`, uploaded 2026-10-15 and committed in PR #12. **A build number can't be reused once uploaded**, even if that build was never submitted. Before archiving, check that the number in `project.pbxproj` hasn't already been uploaded: `202610131852` had been, and the export failed with "bundle version must be higher than the previously uploaded version".
 - **Test launch on the newest iOS before submitting.** Apple reviews on the latest iOS (27.0 as of 2026-10), not the version on the dev phone. The Xcode 27 install has an iOS 27.0 simulator runtime.
 - **The first IAP must be in the same review submission as an app version.** The flow that worked:
   1. If the version is stuck in a rejected or unresolved submission, **remove it from review first**. Use the "remove this version" link on the version page, or remove it on the App Review submission page. The version becomes *Developer Rejected*.
@@ -89,6 +84,12 @@ Both `Stay_On_iOS/mobile/src/App.tsx` and `Stay_On_iOS/source/app/page.tsx` cont
   4. Before clicking Submit, confirm the panel lists **both** the version and the IAP. The confirmation must say **2 Items Submitted**.
 - The version page **does not show an "In-App Purchases and Subscriptions" section** in this account's current App Store Connect UI (checked 2026-09-25), so use the flow above.
 - If you resubmit the version alone by mistake, it goes to *Waiting for Review* with only 1 item. Pull it back with the "remove this version" link and redo the flow.
+- **Resubmitting after a rejection, when the IAP is already in the rejected submission (2026-10-23):**
+  - **How it looked:** the version page showed **Update Review** instead of **Add for Review**. The IAP's checkbox on the In-App Purchases page was greyed out because the IAP was already attached to the *Unresolved Issues* submission, where it showed *Ready for Review*.
+  - **What didn't work:** removing the version from that submission left the IAP behind in it. Then **Add for Review** on the version page made a **new** draft containing only the version.
+  - **What worked:** after the version was removed, the old submission went to *Processing* for a while, with no remove buttons. When it settled, the IAP was in the new draft. It's not recorded whether it moved there by itself or was added through In-App Purchases → Edit → Add for Review. Before clicking Submit for Review, the draft showed **Items Ready to Submit (2)**.
+  - **Simpler route, untested:** with both items still in the *Unresolved Issues* submission, update the build on the version page, reply to Apple's message, and click **Resubmit to App Review** on the submission page.
+  - **Removing the version closes the message thread** for that submission, so put any explanation for Apple in the version's App Review **Notes**.
 - The App Store Connect tab formerly called "App Store" is now **Distribution**.
 - App Review notes on 1.0 describe how to reach Remove Ads (crash screen; hidden while Quick Feedback is open) and list AdMob (banner + interstitial) and IAP-via-RevenueCat. Keep them accurate if the UI changes.
 
