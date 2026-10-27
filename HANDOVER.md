@@ -1,8 +1,11 @@
 # Stay On — Handover
 
-Endless arcade night-driving game ("Stay On"), synthwave/outrun aesthetic. Native iOS app via Capacitor, plus a parallel web build. Last updated 2026-10-23 (build `202609231310` rejected for an iOS 27 launch crash; fixed by adopting the UIScene lifecycle; build `202610151246` resubmitted with the Remove Ads IAP on 2026-10-23, awaiting review).
+Endless arcade night-driving game ("Stay On"), synthwave/outrun aesthetic. Native iOS app via Capacitor, plus a parallel web build. Last updated 2026-10-27 (build `202609231310` rejected for an iOS 27 launch crash; fixed by adopting the UIScene lifecycle; build `202610151246` resubmitted with the Remove Ads IAP on 2026-10-23, still awaiting review as of 2026-10-27).
 
-## Current status (2026-10-23) — start here
+## Current status (2026-10-27) — start here
+
+- **Checked 2026-10-27 via the App Store Connect API**: version 1.0 is **`WAITING_FOR_REVIEW`** (4 days after the 2026-10-23 submission). Nothing to do until Apple responds. To re-check without opening the website, run a small Spaceship script from `mobile/ios/App` with `bundle exec ruby`. It builds a token from `fastlane/.env`, then calls `Spaceship::ConnectAPI::App.find('com.trevorseitz.stayon').get_app_store_versions` and reads each version's `app_store_state`.
+- **Open work waiting on approval**: draft PR #10 (`site/launch-day`, checked out in the worktree `~/Projects/Stay_On-launchday`) holds the launch-day site copy and social links. Merge it only after Apple approves; it replaces the "Coming soon" TODO in "Marketing site". The AdMob steps and the `showBannerAd` consent fix below have not been started; `App.tsx` still calls `AdMob.requestConsentInfo()` with no `canRequestAds` check.
 
 - **App Review**: build `202609231310` was **rejected because it crashed at launch on iOS 27.0**. Without a scene manifest, UIKit traps at launch (`_UIApplicationEvaluateRuntimeIssueForNoSceneLifecycleAdoption`). The fix is PR #11 (commit `9917b14`), described in "iOS 27 scene lifecycle" below.
 - **New build uploaded 2026-10-15**: **1.0 (`202610151246`)**, built from `main` @ `57eac24`. Build `202610131852` (the number in PR #11) was **already used** in App Store Connect, so the upload was rejected as a duplicate and the build number was bumped. The bump was committed in PR #12 (commit `a21f3c6`, merged to `main` as `edbd494`).
@@ -24,7 +27,8 @@ Endless arcade night-driving game ("Stay On"), synthwave/outrun aesthetic. Nativ
 - **`Stay_On_iOS/source/`** — parallel web build (Next.js/vinext-based), same game logic, **no ads/IAP** (gated out via `Capacitor.isNativePlatform()` checks since it's browser-only).
 - **`Marketing/site/`** — static marketing site (plain HTML/CSS, no build step), **live in production at https://stayondriving.com**. See "Marketing site" section below.
 - **`Music/`** — Suno-generated soundtrack masters (WAV, licensed for commercial use) plus OGG/MP3 conversions. `Neon Drift Circuit` is the official in-game soundtrack.
-- `Source_Files/` no longer exists — it held an archival `Stay_On_Source_v9/` snapshot (a near-duplicate of `Stay_On_iOS/source/`) plus two zipped snapshots; removed 2026-08-31 as stale. `git log` still has it if ever needed.
+- `Source_Files/` was removed from git on 2026-08-31. It held an archival `Stay_On_Source_v9/` snapshot (a near-duplicate of `Stay_On_iOS/source/`) plus two zipped snapshots, and `git log` still has them. An untracked leftover folder was deleted from disk on 2026-10-27. Its only file was a copy of `Stay_On_iOS/source/build/sites-vite-plugin.ts`.
+- `.codex/config.toml` is the Codex config that registers the Artlist MCP server. It contains no secrets.
 - `Stay_On_iOS-oldish/` no longer exists — it was the pre-rename version of `Stay_On_iOS/`, fully removed as of the 2026-08-21 commit.
 
 ## Core game logic
@@ -209,4 +213,5 @@ Then in Organizer: **Distribute App → App Store Connect → Upload**, using th
 - No Git LFS — `Music/*.wav` masters (~117MB total) are committed as regular files by choice; be aware of repo size growth if more audio gets added.
 - Root `.gitignore` covers `node_modules/`, `dist/`, `build/`; `mobile/ios/.gitignore` covers `Pods/`, `DerivedData/`, etc.; `mobile/ios/App/.gitignore` covers `fastlane/.env`, `*.p8`, `vendor/bundle/`, `build/`, `*.ipa`. Verify any file is ignored with `git check-ignore -v <path>`.
 - Secrets live in git-ignored `.env` files, never committed: `mobile/.env` (`VITE_SENTRY_DSN`, `VITE_POSTHOG_*`, `SENTRY_ORG`/`SENTRY_PROJECT`/`SENTRY_AUTH_TOKEN`) and `mobile/ios/App/fastlane/.env` (`ASC_*`). `.env.example` files document the keys.
+- Merged branches were deleted locally and on `origin` on 2026-10-27. The only open branch is `site/launch-day` (PR #10).
 - Root `.DS_Store` files and the orphaned root `package-lock.json` (no root `package.json`) were removed 2026-08-31. `.DS_Store` is git-ignored; Finder recreates it, ignore it.

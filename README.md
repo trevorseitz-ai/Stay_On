@@ -1,21 +1,24 @@
 # Stay On
 
-Project workspace for the endless arcade driving game and its store-launch preparation.
+Endless arcade night-driving game with a synthwave look. It ships as a native iOS app built with Capacitor, and it also has a browser build.
 
-## Included
+**Start with [`HANDOVER.md`](HANDOVER.md).** It has the current App Store status, the directory map, build and release steps, and known issues.
 
-- `driving-game-store-checklist.html` — interactive App Store and Google Play launch checklist with persistent browser progress, notes, filtering, JSON export/import, and print-to-PDF support.
+## Layout
 
-## Local use
+- `Stay_On_iOS/mobile/`: the iOS app (Capacitor 8, React, Vite). This is what ships to the App Store, as `com.trevorseitz.stayon`.
+- `Stay_On_iOS/source/`: the browser build. It has the same game logic and no ads or in-app purchases.
+- `Marketing/site/`: the static marketing site, live at https://stayondriving.com. Vercel deploys it automatically when changes merge to `main`.
+- `Marketing/mockups`, `Marketing/Shorts`: marketing images and short-form video work.
+- `Music/`: soundtrack masters (WAV) and OGG versions.
 
-Open the checklist directly in Safari or Chrome:
+## Quick build
 
-```text
-driving-game-store-checklist.html
+```bash
+cd Stay_On_iOS/mobile
+npm install
+npx tsc -b && npx vite build
+npx cap sync ios
 ```
 
-The checklist is designed to be updated as the game moves from MVP testing through store submission.
-
-## Repository status
-
-This is the initial project scaffold. Add the game source, platform wrappers, store assets, and release configuration as they are prepared.
+For TestFlight and App Store uploads, see the "TestFlight" section of `HANDOVER.md`.
