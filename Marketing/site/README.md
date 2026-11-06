@@ -33,6 +33,6 @@ DNS records it shows at Porkbun (registrar + DNS host for this domain).
 
 ## Before launch — checklist
 
-- [ ] Swap the App Store link: `<a ... data-appstore>` currently points at `id6801365584` and the caption says "in review". Once 1.0 is approved, confirm the numeric ID and drop the "coming soon" `<small>`.
+- [x] Swap the App Store link: done 2026-11-05 in PR #10. The `id6801365584` link resolves to the live "Stay On Driving" listing, and the "coming soon" caption is gone.
 - [ ] Set up `support@stayondriving.com` (Porkbun free email forwarding) — it's the contact address on `/privacy` and `/support`.
 - [ ] Paste the `/privacy` URL into App Store Connect → App Privacy, and `/support` into App Information → Support URL. Marketing URL = `https://stayondriving.com/`.
