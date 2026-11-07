@@ -40,12 +40,12 @@ Endless arcade night-driving game ("Stay On"), synthwave/outrun aesthetic. Nativ
 - **1.0 is live**: https://apps.apple.com/us/app/stay-on-driving/id6801365584 ("Stay On Driving", `com.trevorseitz.stayon`, 1.0, Free). Apple approved it and it went `READY_FOR_SALE` on 2026-11-05. The release type was `AFTER_APPROVAL`, so it released on its own.
 - **Why the listing took hours to appear:** **Pricing and Availability had never been saved**, so the app was approved but offered in no country or region. The listing returned 404 and `itunes.apple.com/lookup?id=6801365584` gave 0 results. The App Store Connect API showed the same: `v1/apps/6801365584/appAvailabilityV2` answered "There is no resource of type 'appAvailabilities'". The listing went live a few hours after availability was saved on 2026-11-05. It now reads back with `availableInNewTerritories: true`. **For future apps, set Pricing and Availability before submitting.**
 - **EU storefronts**: not available until the **trader status** declaration (EU Digital Services Act) is done in App Store Connect → Business. **TODO.**
-- **Marketing site**: PR #10 (launch-day copy and social links) merged 2026-11-05 as `b805130`, and production updated within about 20 s. The "Coming soon — 1.0 is in review" captions are gone, and the Download button goes to the live listing. The local branch `site/launch-day` is still checked out in the worktree `~/Projects/Stay_On-launchday`; remove that worktree when convenient.
+- **Marketing site**: PR #10 (launch-day copy and social links) merged 2026-11-05 as `b805130`, and production updated within about 20 s. The "Coming soon — 1.0 is in review" captions are gone, and the Download button goes to the live listing. The `~/Projects/Stay_On-launchday` worktree and the local `site/launch-day` branch were removed on 2026-11-07.
 - **Other open to-dos**:
   - EU trader status.
-  - Confirm the Remove Ads IAP shows as *Approved* in App Store Connect.
-  - Remove the `~/Projects/Stay_On-launchday` worktree.
-  - Decide what to do with the untracked `AGENTS.md` at the repo root. Its origin is unknown, possibly a Codex or gstack tool. It has been left uncommitted.
+- **Done 2026-11-07**:
+  - The Remove Ads IAP (`com.trevorseitz.stayon.removeads`, non-consumable) is **`APPROVED`**, per the App Store Connect API (`v1/apps/6801365584/inAppPurchasesV2`).
+  - `AGENTS.md` is committed. It's the Codex copy of the gstack skill routing rules in `CLAUDE.md` (same content). gstack wrote it alongside `CLAUDE.md` because the repo has a Codex config (`.codex/config.toml`). **Keep the two files in sync.**
 - **Local build environment (2026-11-06/07)**:
   - `npx cap sync ios` failed at `pod install` because a stale `mobile/ios/App/build/` folder from 2026-10-13 was in the way ("Could not delete … because it was not created by the build system"). The folder held an exported `App.ipa` and `App.app.dSYM.zip`, probably from the rejected duplicate build `202610131852`. It was **moved** to `~/Projects/Stay_On-artifacts/ios-build-20261013`, not deleted. After that, `cap sync` passes.
   - Xcode also reported "CoreSimulator is out of date" (1171.7 vs 1174.21), which disabled the simulators. It had cleared by 2026-11-07, most likely after Xcode installed its components or a restart.
