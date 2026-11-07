@@ -1,14 +1,54 @@
 # Stay On — Handover
 
-Endless arcade night-driving game ("Stay On"), synthwave/outrun aesthetic. Native iOS app via Capacitor, plus a parallel web build. Last updated 2026-11-06 (**1.0 is live on the App Store**: build `202610151246` + Remove Ads IAP; launch-day site deployed).
+Endless arcade night-driving game ("Stay On"), synthwave/outrun aesthetic. Native iOS app via Capacitor, plus a parallel web build. Last updated 2026-11-07 (**1.0 is live on the App Store**; **1.0.1** with the ad consent fix is prepared in draft PR #19 and waits on AdMob approval).
 
-## Current status (2026-11-06) — start here
+## Current status (2026-11-07) — start here
+
+### 1.0.1 (in progress)
+
+- **Draft PR #19** (`release/1.0.1`) contains:
+  - the ad consent fallback (`43f4b63`, see step 4 below);
+  - `MARKETING_VERSION` **1.0.1** and build **`202611061430`** (Debug + Release; `package.json` and `package-lock.json` also at 1.0.1);
+  - the latest `main` at the time (merge `c81ab71`);
+  - release notes in `Stay_On_iOS/release-notes/1.0.1.md` (`9b8388a`).
+  PR #16 was closed in favor of #19; its branch `fix/banner-consent` is kept on GitHub.
+- **Checks done**:
+  - `npm run build` and `npx cap sync ios` pass.
+  - **iOS 27.0 simulator** (iPhone 18 Pro), Debug build, 2026-11-07: reached the home screen and was still running 15 s after launch with no crash report. `Info.plist` has `App.SceneDelegate`. The AdMob **test** banner loaded, and the log had no consent, AdMob or purchase errors. Simulators always get Google's test ads, so this doesn't prove production ads serve.
+  - **Not done yet**: a real-device test.
+- **App Store Connect**: version **1.0.1** exists as a draft (`PREPARE_FOR_SUBMISSION`, release type `AFTER_APPROVAL`, no build attached). Checked through the API on 2026-11-06:
+  - What's New holds the **full** notes (296 chars). These include "Ads load more reliably", so switch to the minimal notes if submitting before AdMob shows **Ready**.
+  - Marketing URL is **`https://stayondriving.com`**. It was first saved with a trailing period, then fixed.
+- **Why the Marketing URL matters**: 1.0 shipped with **no Marketing URL**, so the App Store listing shows no developer website. AdMob looks for `app-ads.txt` on that website, so verification can't succeed until 1.0.1 (which has the URL) is live. `https://stayondriving.com/app-ads.txt` itself is live and correct (`google.com, pub-4738248194115302, DIRECT, f08c47fec0942fa0`). The Marketing URL can't be changed on a live version, so it needs an update. Whether AdMob would fall back to the Support URL's domain is unconfirmed.
+- **Remaining, in order**:
+  1. AdMob approval shows **Ready** (see the AdMob bullet below).
+  2. Publish the EU consent message (step 2 below).
+  3. Real-device test (step 3 below), including the airplane-mode relaunch and the offline fresh install.
+  4. Archive 1.0.1, check `202611061430` still isn't taken, upload, attach the build, and submit.
+  5. Merge PR #19.
+
+### AdMob (as of 2026-11-07)
+
+- **App Store listing linked** on 2026-11-06. Searching by name in App store details didn't find the app at first, but it showed up later the same day.
+- **app-ads.txt shows "can't be verified yet"**. This is expected until 1.0.1 ships with the Marketing URL (see above).
+- **Approval status: not checked since linking.** Check AdMob → Apps → Stay On Driving → App settings.
+- **Payments info**: not yet confirmed.
+- Ad IDs: app `ca-app-pub-4738248194115302~8030224710` (in `Info.plist`, `GADApplicationIdentifier`); banner `…/4821502245`; interstitial `…/3809716597`.
+
+### 1.0 launch
 
 - **1.0 is live**: https://apps.apple.com/us/app/stay-on-driving/id6801365584 ("Stay On Driving", `com.trevorseitz.stayon`, 1.0, Free). Apple approved it and it went `READY_FOR_SALE` on 2026-11-05. The release type was `AFTER_APPROVAL`, so it released on its own.
 - **Why the listing took hours to appear:** **Pricing and Availability had never been saved**, so the app was approved but offered in no country or region. The listing returned 404 and `itunes.apple.com/lookup?id=6801365584` gave 0 results. The App Store Connect API showed the same: `v1/apps/6801365584/appAvailabilityV2` answered "There is no resource of type 'appAvailabilities'". The listing went live a few hours after availability was saved on 2026-11-05. It now reads back with `availableInNewTerritories: true`. **For future apps, set Pricing and Availability before submitting.**
 - **EU storefronts**: not available until the **trader status** declaration (EU Digital Services Act) is done in App Store Connect → Business. **TODO.**
 - **Marketing site**: PR #10 (launch-day copy and social links) merged 2026-11-05 as `b805130`, and production updated within about 20 s. The "Coming soon — 1.0 is in review" captions are gone, and the Download button goes to the live listing. The local branch `site/launch-day` is still checked out in the worktree `~/Projects/Stay_On-launchday`; remove that worktree when convenient.
-- **Next, in order**: (a) AdMob steps 1–3 below. They are unblocked now that the listing exists, and they have to be done by hand (see the next bullet). (b) Device-test and merge draft **PR #16** (`fix/banner-consent`), which is step 4 below, planned for 1.0.1. (c) EU trader status. (d) Confirm the Remove Ads IAP shows as *Approved* in App Store Connect.
+- **Other open to-dos**:
+  - EU trader status.
+  - Confirm the Remove Ads IAP shows as *Approved* in App Store Connect.
+  - Remove the `~/Projects/Stay_On-launchday` worktree.
+  - Decide what to do with the untracked `AGENTS.md` at the repo root. Its origin is unknown, possibly a Codex or gstack tool. It has been left uncommitted.
+- **Local build environment (2026-11-06/07)**:
+  - `npx cap sync ios` failed at `pod install` because a stale `mobile/ios/App/build/` folder from 2026-10-13 was in the way ("Could not delete … because it was not created by the build system"). The folder held an exported `App.ipa` and `App.app.dSYM.zip`, probably from the rejected duplicate build `202610131852`. It was **moved** to `~/Projects/Stay_On-artifacts/ios-build-20261013`, not deleted. After that, `cap sync` passes.
+  - Xcode also reported "CoreSimulator is out of date" (1171.7 vs 1174.21), which disabled the simulators. It had cleared by 2026-11-07, most likely after Xcode installed its components or a restart.
 - **Browser automation can't sign in to AdMob from Claude Code on this Mac.** gstack's `cookie-import-browser` (Chrome `Profile 2`, "Trevor-AI") waits forever on the "Chrome Safe Storage" Keychain prompt, and the prompt never reaches the screen from that session. `security find-generic-password` timed out there too, even after "Always Allow". The visible-window fallback (`$B handoff`) needs `npx playwright install`, which was not run. Do AdMob console steps by hand.
 - The pre-approval history below is kept for reference.
 - **Checked 2026-10-27 via the App Store Connect API**: version 1.0 was **`WAITING_FOR_REVIEW`**. To re-check without opening the website, run a small Spaceship script from `mobile/ios/App` with `bundle exec ruby`. It builds a token from `fastlane/.env`, then calls `Spaceship::ConnectAPI::App.find('com.trevorseitz.stayon').get_app_store_versions` and reads each version's `app_store_state`.
@@ -21,11 +61,11 @@ Endless arcade night-driving game ("Stay On"), synthwave/outrun aesthetic. Nativ
 - **Earlier rejection (2026-09-23, Guideline 2.1(b))**: the app referenced Remove Ads but the IAP had never been submitted. An app's **first** IAP can only be submitted *with* an app version — RevenueCat's `submit-products-to-store` skips it for that reason. See "App Store submission gotchas" below for the App Store Connect flow that finally worked.
 - **If 1.0 is rejected again**: read the App Review message, fix the issue, and resubmit both items together using the flow in "App Store submission gotchas". A TestFlight install on a real iOS 27 device is still untested and worth doing first if the rejection is another crash.
 - **AdMob**: ads currently **do not load** on device — `requestConsentInfo` fails ("Request consent info failed") and interstitials return "Publisher data not found". **Corrected 2026-09-26**: this is *not* a payment-verification block — AdMob Payments → Verification confirmed identity verification only triggers once earnings reach a threshold, and earnings are $0.00, so nothing is pending there. The real blocker is that AdMob **App settings → App store details** shows unlinked ("Add") and **Approval status: Requires review**, which can't be resolved until Apple approves the 1.0 resubmission and the App Store listing exists to link. The **Privacy & messaging → European regulations** consent message's **Publish** button is also greyed out, consistent with the app itself still being in "Requires review." Not related to the Capacitor 8 upgrade (ads loaded on the upgraded build earlier the same day; app ID/ad unit IDs unchanged).
-- **After Apple approves 1.0, in order** (approved 2026-11-05; status as of 2026-11-06: 1–3 not started, 4 in draft PR #16, 5 done):
-  1. AdMob → Apps → Stay On Driving → App settings → App store details → **Add** (link the App Store listing: search "Stay On Driving" and pick App ID `6801365584`). Then AdMob reviews the app (a few days) until it shows **Ready**.
+- **After Apple approves 1.0, in order** (approved 2026-11-05; status as of 2026-11-07: 1 done and AdMob review pending, 2–3 not started, 4 in draft PR #19, 5 done):
+  1. ~~AdMob → Apps → Stay On Driving → App settings → App store details → **Add** (link the App Store listing).~~ Linked 2026-11-06. The name search can lag a day behind the App Store; searching by `6801365584` or pasting the store URL also works. Now AdMob reviews the app (a few days) until it shows **Ready**.
   2. Once the app clears review: AdMob → Privacy & messaging → European regulations → Settings tab → select Stay On Driving → enter Privacy policy URL `https://stayondriving.com/privacy` → Messages tab → publish the consent message (Publish was greyed out on 2026-09-26 while the app was still "Requires review").
   3. Then reinstall from Xcode on a device and confirm banner + interstitial load. If not, grab `AdMob initialization failed` / `Interstitial prepare failed` lines from the Xcode console.
-  4. In `mobile/src/App.tsx` `showBannerAd`, stop a failed consent request from aborting the banner attempt entirely, while staying privacy-correct. **Implemented in draft PR #16** (`fix/banner-consent`, not on `main`). The new `resolveCanRequestAds()` saves `canRequestAds` under the localStorage key `stay-on-can-request-ads` after each successful consent request. If a request fails, it uses the saved value, and with nothing saved it shows no ads. Banner and interstitial loading both require it. `npm run build` passes, but it has not been run on a device. Test after steps 1–3: ads load; a relaunch in airplane mode uses the cached value; a fresh install while offline requests no ads.
+  4. In `mobile/src/App.tsx` `showBannerAd`, stop a failed consent request from aborting the banner attempt entirely, while staying privacy-correct. **Implemented** in commit `43f4b63`, which now ships in **draft PR #19** (`release/1.0.1`). PR #16 was closed in favor of #19. Not on `main` yet. The new `resolveCanRequestAds()` saves `canRequestAds` under the localStorage key `stay-on-can-request-ads` after each successful consent request. If a request fails, it uses the saved value, and with nothing saved it shows no ads. Banner and interstitial loading both require it. `npm run build` passes and the iOS 27 simulator run on 2026-11-07 was clean, but it has not been run on a device. Test after steps 1–3: ads load; a relaunch in airplane mode uses the cached value; a fresh install while offline requests no ads.
   5. ~~Marketing site TODO: swap the "Coming soon" App Store caption once 1.0 is live.~~ Done 2026-11-05 (PR #10).
 
 ## Directory map
@@ -86,7 +126,7 @@ Both `Stay_On_iOS/mobile/src/App.tsx` and `Stay_On_iOS/source/app/page.tsx` cont
 
 ## App Store submission gotchas (learned 2026-09-25)
 
-- **Build numbers** are UTC-ish timestamps (`YYYYMMDDHHMM`), in `CURRENT_PROJECT_VERSION` in `App.xcodeproj/project.pbxproj` (Debug + Release). Current: `202610151246`, uploaded 2026-10-15 and committed in PR #12. **A build number can't be reused once uploaded**, even if that build was never submitted. Before archiving, check that the number in `project.pbxproj` hasn't already been uploaded: `202610131852` had been, and the export failed with "bundle version must be higher than the previously uploaded version".
+- **Build numbers** are UTC-ish timestamps (`YYYYMMDDHHMM`), in `CURRENT_PROJECT_VERSION` in `App.xcodeproj/project.pbxproj` (Debug + Release). Last uploaded: `202610151246` (1.0, 2026-10-15, PR #12), which was still the highest build in App Store Connect on 2026-11-06. Next: `202611061430` for 1.0.1, set on `release/1.0.1` (PR #19) but **not uploaded yet**. **A build number can't be reused once uploaded**, even if that build was never submitted. Before archiving, check that the number in `project.pbxproj` hasn't already been uploaded: `202610131852` had been, and the export failed with "bundle version must be higher than the previously uploaded version".
 - **Test launch on the newest iOS before submitting.** Apple reviews on the latest iOS (27.0 as of 2026-10), not the version on the dev phone. The Xcode 27 install has an iOS 27.0 simulator runtime.
 - **The first IAP must be in the same review submission as an app version.** The flow that worked:
   1. If the version is stuck in a rejected or unresolved submission, **remove it from review first**. Use the "remove this version" link on the version page, or remove it on the App Review submission page. The version becomes *Developer Rejected*.
