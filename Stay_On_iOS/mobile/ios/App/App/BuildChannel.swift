@@ -11,8 +11,26 @@ public class BuildChannelPlugin: CAPPlugin, CAPBridgedPlugin {
     public let identifier = "BuildChannelPlugin"
     public let jsName = "BuildChannel"
     public let pluginMethods: [CAPPluginMethod] = [
-        CAPPluginMethod(name: "get", returnType: CAPPluginReturnPromise)
+        CAPPluginMethod(name: "get", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "buildInfo", returnType: CAPPluginReturnPromise)
     ]
+
+    /// Compile-time facts, answered at once with no StoreKit lookup, so the web
+    /// layer can wait for them before starting Sentry (which fixes the
+    /// environment at init time for native reports such as app hangs).
+    @objc func buildInfo(_ call: CAPPluginCall) {
+        #if targetEnvironment(simulator)
+        let simulator = true
+        #else
+        let simulator = false
+        #endif
+        #if DEBUG
+        let debug = true
+        #else
+        let debug = false
+        #endif
+        call.resolve(["simulator": simulator, "debug": debug])
+    }
 
     @objc func get(_ call: CAPPluginCall) {
         Task {
