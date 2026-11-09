@@ -1,12 +1,29 @@
 # Stay On — Handover
 
-Endless arcade night-driving game ("Stay On"), synthwave/outrun aesthetic. Native iOS app via Capacitor, plus a parallel web build. Last updated 2026-11-07 (**1.0 is live on the App Store**; **1.0.1** with the ad consent fix and Marketing URL is uploaded and about to be submitted; EU trader status in review).
+Endless arcade night-driving game ("Stay On"), synthwave/outrun aesthetic. Native iOS app via Capacitor, plus a parallel web build. Last updated 2026-11-09 (**1.0.1 is live on the App Store** with the ad consent fix and Marketing URL; AdMob app-ads.txt **verified**, AdMob app review "Getting ready"; EU trader status in review).
 
-## Current status (2026-11-07) — start here
+## Current status (2026-11-09) — start here
 
-### 1.0.1 (in progress)
+- **1.0.1 is live.** App Store Connect shows **Ready for Distribution**, and the public listing shows 1.0.1 with a **Developer Website** link (`stayondriving.com`). This broke the AdMob deadlock described below.
+- **AdMob app-ads.txt verified** on 2026-11-09 ("Your pub ID was found and app-ads.txt verified"), after one **Check for updates**. App approval status is now **"Getting ready"** (Google's app review, usually a few days).
+- **PR #19 merged** to `main` on 2026-11-09 (merge commit `8c1ad93`), so `main` matches the shipped 1.0.1.
+- **Remaining, in order**:
+  1. Wait for AdMob approval status **Ready**.
+  2. Publish the EU consent message (step 2 in "After Apple approves 1.0" below).
+  3. Real-device ad test on the App Store install of 1.0.1 (Remove Ads not owned): banner and interstitial load; relaunch in airplane mode uses the cached consent value; a fresh install while offline requests no ads.
+  4. EU trader status: still in review; confirm acceptance and EU availability.
+  5. AdMob Payments → Payments info: not yet confirmed.
+- **Sentry noise from the simulator**: issues STAY-ON-2, STAY-ON-3 and STAY-ON-6 ("App Hang") were all from the **iOS 27 simulator on this Mac** (`build_type: simulator`), running 1.0.1, launched 2026-11-07 18:08 UTC during the simulator pass and left in the foreground. They were resolved on 2026-11-09 and the simulator was no longer booted. Simulator builds report as `environment: production`, so they look like real-user issues. Consider tagging simulator and debug builds with a separate environment in `mobile/src/main.tsx`.
+- **Build env 2026-11-09**:
+  - The context-mode plugin's hooks need **Node 24.15+**. With Homebrew Node 24.1.0 its hook failed (`NODE_TOO_OLD`) and blocked every Bash and WebFetch call. Fixed by `brew upgrade node` (now **26.13.0**). Homebrew also replaced `npm`/`npx`, backing up the old ones to `~/Library/Caches/Homebrew/Backup`.
+  - Empty Finder custom-icon files (`Icon\r`, 0 bytes, icon stored in the resource fork) are in most folders of the repo, including **128 inside `.git`** (`.git/refs/Icon\r` was dated 2026-11-09 08:32). Their source is unknown; a sync or folder-icon tool is likely. Git fails on them ("fatal: bad object refs/Icon?"). They were deleted from `.git` only (`find .git -name $'Icon\r' -size 0 -delete`). If git errors like that come back, run the same command. The ones in the working tree are untracked and harmless.
+  - The 2026-11-07 handover commit `7c49d76` (branch `docs/handover-20261107b`) was pushed without a PR. It was carried into the 2026-11-09 handover branch.
 
-- **Draft PR #19** (`release/1.0.1`) contains:
+## Status as of 2026-11-07 (kept for history)
+
+### 1.0.1
+
+- **PR #19** (`release/1.0.1`, merged 2026-11-09) contains:
   - the ad consent fallback (`43f4b63`, see step 4 below);
   - `MARKETING_VERSION` **1.0.1** and build **`202611061430`** (Debug + Release; `package.json` and `package-lock.json` also at 1.0.1);
   - the latest `main` at the time (merge `c81ab71`);
@@ -37,7 +54,7 @@ Endless arcade night-driving game ("Stay On"), synthwave/outrun aesthetic. Nativ
 
 - **App Store listing linked** on 2026-11-06. Searching by name in App store details didn't find the app at first, but it showed up later the same day.
 - **App verification failed on 2026-11-07** ("We couldn't verify Stay On Driving (iOS)"). The cause is the missing developer website on the 1.0 listing, not the file; see "Why 1.0.1 ships before AdMob approval" above. Don't edit `app-ads.txt` and don't keep clicking **Check for updates**. Click it once, after 1.0.1 is live.
-- **Approval status**: waiting on app verification.
+- **Approval status**: waiting on app verification. *(2026-11-09: verified; status now "Getting ready".)*
 - **Payments info**: not yet confirmed.
 - Ad IDs: app `ca-app-pub-4738248194115302~8030224710` (in `Info.plist`, `GADApplicationIdentifier`); banner `…/4821502245`; interstitial `…/3809716597`.
 
