@@ -8,7 +8,7 @@ Endless arcade night-driving game ("Stay On"), synthwave/outrun aesthetic. Nativ
 - **AdMob app-ads.txt verified** on 2026-11-09 ("Your pub ID was found and app-ads.txt verified"), after one **Check for updates**. App approval status is now **"Getting ready"** (Google's app review, usually a few days).
 - **PR #19 merged** to `main` on 2026-11-09 (merge commit `8c1ad93`), so `main` matches the shipped 1.0.1.
 - **`main` is now ahead of 1.0.1** by the Sentry environment fix (PR #23, see below). It is native and JS code, so it ships only with the next App Store build. No new version or build number has been set for it yet.
-- **AdMob still "Getting ready"** when last checked, late on 2026-11-09. Check every day or two; nothing to click until it shows **Ready**.
+- **AdMob still "Getting ready"** when last checked on 2026-11-09. Check every day or two; nothing to click until it shows **Ready**.
 - **Remaining, in order**:
   1. Wait for AdMob approval status **Ready**.
   2. Publish the EU consent message (step 2 in "After Apple approves 1.0" below).
