@@ -1,6 +1,6 @@
 # Stay On — Handover
 
-Endless arcade night-driving game ("Stay On"), synthwave/outrun aesthetic. Native iOS app via Capacitor, plus a parallel web build. Last updated 2026-11-09 (**1.0.1 is live on the App Store** with the ad consent fix and Marketing URL; AdMob app-ads.txt **verified**, AdMob app review "Getting ready"; EU trader status in review).
+Endless arcade night-driving game ("Stay On"), synthwave/outrun aesthetic. Native iOS app via Capacitor, plus a parallel web build. Last updated 2026-11-09 (**1.0.1 is live on the App Store** with the ad consent fix and Marketing URL; AdMob app-ads.txt **verified**, AdMob app **approved** and EU consent message **published**; ads show on a real device; EU trader status in review).
 
 ## Current status (2026-11-09) — start here
 
@@ -8,13 +8,17 @@ Endless arcade night-driving game ("Stay On"), synthwave/outrun aesthetic. Nativ
 - **AdMob app-ads.txt verified** on 2026-11-09 ("Your pub ID was found and app-ads.txt verified"), after one **Check for updates**. App approval status is now **"Getting ready"** (Google's app review, usually a few days).
 - **PR #19 merged** to `main` on 2026-11-09 (merge commit `8c1ad93`), so `main` matches the shipped 1.0.1.
 - **`main` is now ahead of 1.0.1** by the Sentry environment fix (PR #23, see below). It is native and JS code, so it ships only with the next App Store build. No new version or build number has been set for it yet.
-- **AdMob still "Getting ready"** when last checked on 2026-11-09. Check every day or two; nothing to click until it shows **Ready**.
+- **AdMob approved the app** on the evening of 2026-11-09.
+- **EU consent message published** 2026-11-09 (Privacy & messaging → European regulations → Messages; "Untitled European regulations message", app Stay On Driving, English, Status **Published**). The message editor had **no privacy policy URL field**: selecting the app under Setup → Your apps was enough. If a URL is ever needed, look in the **Settings** tab on that page.
+  - It shows only to users in the EEA, UK and Switzerland, so a US device never sees it.
+  - "Do not consent" is a dropdown labeled **Select**; Publish stays grey until it has a value.
+- **Real-device ad test**: on 2026-11-09 the user installed 1.0.1 from the App Store and reported ads "seem to work". This was a quick check only. The airplane-mode relaunch and the offline fresh install were not reported.
+- **Do not tap ads on your own device** (AdMob policy; can suspend the account). Register the phone first: AdMob → **Settings → Test devices → Add test device**, with the phone's IDFA. Not done yet.
 - **Remaining, in order**:
-  1. Wait for AdMob approval status **Ready**.
-  2. Publish the EU consent message (step 2 in "After Apple approves 1.0" below).
-  3. Real-device ad test on the App Store install of 1.0.1 (Remove Ads not owned): banner and interstitial load; relaunch in airplane mode uses the cached consent value; a fresh install while offline requests no ads.
-  4. EU trader status: still in review; confirm acceptance and EU availability.
-  5. AdMob Payments → Payments info: not yet confirmed.
+  1. Register the test device in AdMob (above).
+  2. Finish the ad test: airplane-mode relaunch uses the cached consent value; a fresh install while offline requests no ads.
+  3. EU trader status: still in review; confirm acceptance and EU availability. Once EU storefronts open, the consent message can be checked from an EU user or VPN.
+  4. AdMob Payments → Payments info: not yet confirmed.
 - **Sentry noise from the simulator**: issues STAY-ON-2, STAY-ON-3 and STAY-ON-6 ("App Hang") were all from the **iOS 27 simulator on this Mac** (`build_type: simulator`), running 1.0.1, launched 2026-11-07 18:08 UTC during the simulator pass and left in the foreground. They were resolved on 2026-11-09 and the simulator was no longer booted. Simulator builds reported as `environment: production` because the web bundle is always a production Vite build. **Fixed after 1.0.1** (PR #23, merged to `main` 2026-11-09 as `3481151`): `BuildChannel.buildInfo()` returns compile-time `simulator`/`debug` flags at once, and `mobile/src/main.tsx` waits for it before `Sentry.init`. The environment is now `simulator`, `development` (Debug device builds) or `production`. Every event also gets a `build_channel` tag (`appstore`/`testflight`/`xcode`/`simulator`). It ships with the next App Store build; 1.0.1 still reports simulator runs as production. Checked on the iOS 27 simulator: `buildInfo` returned `{"simulator":true,"debug":true}` before `initNativeSdk`.
 - **Build env 2026-11-09**:
   - The context-mode plugin's hooks need **Node 24.15+**. With Homebrew Node 24.1.0 its hook failed (`NODE_TOO_OLD`) and blocked every Bash and WebFetch call. Fixed by `brew upgrade node` (now **26.13.0**). Homebrew also replaced `npm`/`npx`, backing up the old ones to `~/Library/Caches/Homebrew/Backup`.
