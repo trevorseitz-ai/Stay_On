@@ -22,6 +22,7 @@ type GameState = "ready" | "countdown" | "playing" | "crashed";
 const REVENUECAT_IOS_API_KEY = "appl_dZSneUxWQOUORrPlotrOQWefBCF";
 const AD_FREE_ENTITLEMENT_ID = "ad_free"; // must match RevenueCat dashboard entitlement id
 const INTERSTITIAL_AD_ID = "ca-app-pub-4738248194115302/3809716597";
+const CAN_REQUEST_ADS_KEY = "stay-on-can-request-ads";
 const INTERSTITIAL_RUN_INTERVAL = 2;
 
 // The ad-free unlock is configured as the Lifetime package on the current
@@ -198,19 +199,40 @@ export default function Home() {
   };
 
   useEffect(() => {
+    let canRequestAds = false;
     let bannerAdShown = false;
+
+    // Resolve whether ads may be requested. A failed consent request (e.g. no
+    // network, or AdMob app not yet approved) must not block ads outright, but
+    // must not bypass consent either: fall back to the canRequestAds value from
+    // the last successful request, and default to no ads if there is none.
+    const resolveCanRequestAds = async (): Promise<boolean> => {
+      try {
+        let consentInfo = await AdMob.requestConsentInfo();
+        if (
+          consentInfo.isConsentFormAvailable &&
+          consentInfo.status === AdmobConsentStatus.REQUIRED
+        ) {
+          consentInfo = await AdMob.showConsentForm();
+        }
+        localStorage.setItem(CAN_REQUEST_ADS_KEY, consentInfo.canRequestAds ? "1" : "0");
+        return consentInfo.canRequestAds;
+      } catch (err) {
+        const cached = localStorage.getItem(CAN_REQUEST_ADS_KEY) === "1";
+        console.error(`Consent request failed; using cached canRequestAds=${cached}:`, err);
+        return cached;
+      }
+    };
 
     const showBannerAd = async () => {
       if (bannerAdShown || adFreeRef.current || !Capacitor.isNativePlatform()) return;
       bannerAdShown = true;
       try {
         await AdMob.initialize();
-        const consentInfo = await AdMob.requestConsentInfo();
-        if (
-          consentInfo.isConsentFormAvailable &&
-          consentInfo.status === AdmobConsentStatus.REQUIRED
-        ) {
-          await AdMob.showConsentForm();
+        canRequestAds = await resolveCanRequestAds();
+        if (!canRequestAds) {
+          bannerAdShown = false;
+          return;
         }
         await AdMob.showBanner({
           adId: "ca-app-pub-4738248194115302/4821502245",
@@ -229,7 +251,7 @@ export default function Home() {
     let interstitialListenerHandles: { remove: () => Promise<void> }[] = [];
 
     const prepareInterstitial = async () => {
-      if (adFreeRef.current || !Capacitor.isNativePlatform()) return;
+      if (adFreeRef.current || !canRequestAds || !Capacitor.isNativePlatform()) return;
       try {
         await AdMob.prepareInterstitial({ adId: INTERSTITIAL_AD_ID });
       } catch (err) {
