@@ -1,6 +1,6 @@
 # Stay On — Handover
 
-Endless arcade night-driving game ("Stay On"), synthwave/outrun aesthetic. Native iOS app via Capacitor, plus a parallel web build. Last updated 2026-11-09 (**1.0.1 is live on the App Store** with the ad consent fix and Marketing URL; AdMob app-ads.txt **verified**, AdMob app **approved** and EU consent message **published**; ads show on a real device; EU trader status in review).
+Endless arcade night-driving game ("Stay On"), synthwave/outrun aesthetic. Native iOS app via Capacitor, plus a parallel web build. Last updated 2026-11-10 (**1.0.1 is live on the App Store** with the ad consent fix and Marketing URL; AdMob app-ads.txt **verified**, AdMob app **approved** and EU consent message **published**; ads show on a real device; EU trader status in review).
 
 ## Current status (2026-11-09) — start here
 
@@ -13,6 +13,7 @@ Endless arcade night-driving game ("Stay On"), synthwave/outrun aesthetic. Nativ
   - It shows only to users in the EEA, UK and Switzerland, so a US device never sees it.
   - "Do not consent" is a dropdown labeled **Select**; Publish stays grey until it has a value.
 - **Real-device ad test**: on 2026-11-09 the user installed 1.0.1 from the App Store and reported ads "seem to work". This was a quick check only. The airplane-mode relaunch and the offline fresh install were not reported.
+- **Monitoring check 2026-11-10**: Sentry `stay-on` had **no unresolved issues in 14 days** and no issue seen in the last 24 h, so the real-device ad test caused no crash or error. Vercel `stayondriving` had no toolbar comments and **no runtime errors in 7 days**. The production deploy of PR #25 (`60d3271`) is READY.
 - **Do not tap ads on your own device** (AdMob policy; can suspend the account). Register the phone first: AdMob → **Settings → Test devices → Add test device**, with the phone's IDFA. Not done yet.
 - **Remaining, in order**:
   1. Register the test device in AdMob (above).
