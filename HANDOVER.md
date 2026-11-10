@@ -1,6 +1,6 @@
 # Stay On — Handover
 
-Endless arcade night-driving game ("Stay On"), synthwave/outrun aesthetic. Native iOS app via Capacitor, plus a parallel web build. Last updated 2026-11-10 (**1.0.1 is live on the App Store** with the ad consent fix and Marketing URL; AdMob app-ads.txt **verified**, AdMob app **approved** and EU consent message **published**; ads show on a real device; EU trader status in review).
+Endless arcade night-driving game ("Stay On"), synthwave/outrun aesthetic. Native iOS app via Capacitor, plus a parallel web build. Last updated 2026-11-10 (**1.0.1 is live on the App Store** with the ad consent fix and Marketing URL; AdMob app-ads.txt **verified**, AdMob app **approved** and EU consent message **published**; ads show on a real device; EU trader status in review). **Marketing went live the same day:** the first batch of 3 Instagram Reels (B-001) is approved and set to post through Trev-HQ → Buffer from Thu 2026-11-12. See *Marketing: AI team pilot*.
 
 ## Current status (2026-11-09) — start here
 
@@ -210,7 +210,63 @@ Stay On is the **first pilot** for the AI marketing team designed by the Claude/
 - **System handover:** `~/Projects/AI_Team/HANDOVER.md`.
 - **Owner checklist:** `~/Projects/AI_Team/NEEDS-FROM-TREVOR.md`.
 
-**Status:** The plan has been agreed. Nothing is built or connected yet, and nothing has been posted.
+### Status 2026-11-10: first batch approved, publishing switched on
+
+**What posts, and when.** B-001 has 3 Instagram Reels for @stayondriving, posted at 7pm Eastern:
+
+| Post | Clip | Goes live | Handed to Buffer between (ET) | Bio link `ct` |
+|---|---|---|---|---|
+| B-001-1 | `Marketing/Shorts/1_looked_easy_12_seconds.mp4` | Thu 11/12 | Wed 7am – Thu 6:45pm | `b001-1` |
+| B-001-2 | `Marketing/Shorts/3_hold_left_release_right.mp4` | Sat 11/14 | Fri 7am – Sat 6:45pm | `b001-2` |
+| B-001-3 | `Marketing/Shorts/4_road_changes_300_meters.mp4` | Mon 11/16 | Sun 7am – Mon 6:45pm | `b001-3` |
+
+- **Approval:** Trevor approved B-001 in the Trev-HQ Inbox on 2026-11-10 (approval `333fed5a-7b9f-4cbc-8742-46075f6f3693`).
+- **Batch record:** captions, hooks and checks are in `~/Projects/AI_Team/campaigns/stay-on-pilot-1/batches/B-001.md` (AI_Team PR #18).
+- **Clips:** hosted in Trev-HQ's Supabase bucket `publish-media` (`stay-on/B-001/<sha256>.mp4`). All 3 public URLs were read back and their sha256 matched.
+
+**How publishing works.** Trev-HQ (trev-hq.vercel.app; PRs #6 and #7, migrations 0010 and 0011, deployed 2026-11-10) runs once a day at **14:00 UTC (9am Eastern)**. **Run now** in the Inbox does the same. Each run:
+1. Schedules each due post in Buffer at its exact time, then reads it back.
+2. After the post time, records whether it went out, with the public link.
+
+Safety checks:
+- A post is sent only if it belongs to a batch approved as written.
+- The video's sha256 must still match the approved file.
+- The Buffer channel for that network must match the approved handle, or nothing is sent.
+- A post is never sent twice.
+- **Pause all agents** pulls back any post still waiting in Buffer.
+
+Results appear in **Inbox → Publishing**. A red note there needs attention. Full rules: `~/Projects/Trev-HQ/docs/INSTRUCTIONS.md`.
+
+**Verified on 2026-11-10:**
+- Buffer and Instagram are connected, and `BUFFER_API_KEY` is set in Vercel (Production).
+- The first **Run now** (19:56 UTC) ended "done" with no notes. Buffer accepted the key and found one organization. All 3 posts were reserved with the windows above, and none were handed to Buffer yet (correct).
+
+**Not verified yet:** whether Buffer's Instagram channel name matches `@stayondriving`. The publisher only checks this at hand-off, so the **Wed 11/11 9am ET run** is the first real test.
+- **Pass:** B-001-1 shows **"scheduled in Buffer"**, and Buffer's queue has it for Thu 7pm.
+- **Fail:** a red note "no Buffer instagram channel for @stayondriving", and nothing is sent. Thursday's run is the second try.
+
+**Trevor, by hand:**
+- Before each post, switch the Instagram bio link to that post's campaign link.
+- Campaign links are in `~/Projects/AI_Team/campaigns/stay-on-pilot-1/campaign-links.md`, format `https://apps.apple.com/app/apple-store/id6801365584?pt=120051450&ct=b001-N&mt=8`.
+- The publisher doesn't change the bio.
+- **Bio links:** they can only be edited in the Instagram mobile app (Edit profile → Links); instagram.com in a browser can't edit them.
+  - On 2026-11-10 Trevor replaced stayondriving.com with the `b001-1` link.
+  - Next: switch to `b001-2` on Sat 11/14 around 6:30pm ET, then to `b001-3` on Mon 11/16 around 6:30pm ET.
+
+**Open:**
+- **EU end card:** every clip ends on "DOWNLOAD STAY ON", but EU storefronts aren't open yet (trader status in review). The fact sheet only says not to target the EU. Trevor's call.
+- **AI_Team's `HANDOVER.md` is stale** (last updated 2026-10-11) and still says nothing is connected.
+- **`funnel.sql` comment is wrong.** It says `build_channel` arrived with 1.0.1, but it shipped in 1.0 (see *Analytics build_channel tag*). The filter is still right, because it only drops `testflight`/`xcode`/`simulator`/`dev`/`web`.
+- **Telemetry baseline:** `funnel.sql` START is 2026-11-05 08:00 UTC. As of 2026-11-10 there were 4 players, likely all Trevor's devices.
+
+**Other 2026-11-10 changes in AI_Team:**
+- PR #17 updated the post-launch fact sheet: "free", "available on the App Store" (outside the EU) and "$2.99 Remove Ads" are now publishable.
+- PR #17 also refreshed `readiness.md` and set the funnel START.
+- PR #18 recorded the B-001 submission.
+
+**`Icon\r` files keep coming back** inside `.git/refs` across all repos under `~/Projects`, even in branch folders created hours earlier. 134 were deleted on 2026-11-10. Something is still creating them, probably a folder-icon tool or a custom icon on `~/Projects`. If git says `bad object refs/Icon?`, run `find .git/refs -name $'Icon\r' -size 0 -delete`.
+
+### Original plan (2026-10-05)
 
 **What the pilot does with this app:**
 - **Before Apple approves:** account audit, a dated fact sheet (what may be claimed), a check of the App Store page, and 3 gameplay clips drafted. Clips use real gameplay and the game's own audio only. No platform music, faceless, and no mention of the developer.
@@ -223,12 +279,7 @@ Stay On is the **first pilot** for the AI marketing team designed by the Claude/
   - Sandbox purchases don't count as conversions.
   - Ad revenue counts as $0 until a device test passes.
 
-**Social handles (public check, 2026-10-05):**
-- Instagram **@stayondriving** exists and is empty. It's probably Trevor's (needs confirming).
-- TikTok **@stayon** has 47 followers and no videos. Unknown owner.
-- `stayondriving` appears available on TikTok, YouTube and X.
-- The site links to no social accounts.
-- Details: `~/Projects/AI_Team/council/social-audit-public-2026-10-05.md`.
+**Social handles:** @stayondriving on Instagram (Business), TikTok, YouTube and X are all Trevor's, owned by `social@stayondriving.com` with 2FA on. The site links to all four (PR #10). The 2026-10-05 public check is in `~/Projects/AI_Team/council/social-audit-public-2026-10-05.md`.
 
 ## Backlog / ideas for later
 
