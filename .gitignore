@@ -6,3 +6,6 @@ build/
 .env
 .env.*
 !.env.example
+
+# macOS custom folder icon files
+Icon?
