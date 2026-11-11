@@ -255,14 +255,18 @@ Results appear in **Inbox → Publishing**. A red note there needs attention. Fu
 
 **Open:**
 - **EU end card:** every clip ends on "DOWNLOAD STAY ON", but EU storefronts aren't open yet (trader status in review). The fact sheet only says not to target the EU. Trevor's call.
-- **AI_Team's `HANDOVER.md` is stale** (last updated 2026-10-11) and still says nothing is connected.
-- **`funnel.sql` comment is wrong.** It says `build_channel` arrived with 1.0.1, but it shipped in 1.0 (see *Analytics build_channel tag*). The filter is still right, because it only drops `testflight`/`xcode`/`simulator`/`dev`/`web`.
+- **Next (proposed, not started):** an ASO batch: new App Store keyword field and subtitle, drafted by the AI team and approved in the Inbox like the Reels (Trev-HQ already has the `aso_metadata` approval type). Before that, check **App Store Connect → Analytics → Sources** to see how many installs come from App Store Search vs Web Referrer (the Instagram links). For free keyword popularity scores, use a free Apple Ads account's keyword planner (no ads need to run).
 - **Telemetry baseline:** `funnel.sql` START is 2026-11-05 08:00 UTC. As of 2026-11-10 there were 4 players, likely all Trevor's devices.
 
 **Other 2026-11-10 changes in AI_Team:**
 - PR #17 updated the post-launch fact sheet: "free", "available on the App Store" (outside the EU) and "$2.99 Remove Ads" are now publishable.
 - PR #17 also refreshed `readiness.md` and set the funnel START.
 - PR #18 recorded the B-001 submission.
+- PR #19 fixed the `funnel.sql` comment (`build_channel` shipped in 1.0, not 1.0.1) and brought AI_Team's `HANDOVER.md` up to date.
+
+**Process infographic:** a one-page overview of the pipeline (draft → host → approve → hand off → post → measure, the five pre-send checks, what Pause does, and the B-001 week) is at https://claude.ai/artifact/YYoq5NCXGJ9UGAi9aZEbWE. It's private to Trevor until shared.
+
+**Decided 2026-11-10: no OpenSEO for now** (github.com/every-app/open-seo). It's a self-hosted Semrush/Ahrefs alternative for *website* SEO (Google ranks, backlinks, site audits) that needs a paid DataForSEO key. Stay On's installs come from App Store search and social video, so the gap is ASO, not web SEO. Revisit if the marketing site becomes a real download source.
 
 **`Icon\r` files keep coming back** inside `.git/refs` across all repos under `~/Projects`, even in branch folders created hours earlier. 134 were deleted on 2026-11-10. Something is still creating them, probably a folder-icon tool or a custom icon on `~/Projects`. If git says `bad object refs/Icon?`, run `find .git/refs -name $'Icon\r' -size 0 -delete`.
 
