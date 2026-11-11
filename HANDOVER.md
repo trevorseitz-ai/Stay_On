@@ -1,6 +1,6 @@
 # Stay On — Handover
 
-Endless arcade night-driving game ("Stay On"), synthwave/outrun aesthetic. Native iOS app via Capacitor, plus a parallel web build. Last updated 2026-11-10 (**1.0.1 is live on the App Store** with the ad consent fix and Marketing URL; AdMob app-ads.txt **verified**, AdMob app **approved** and EU consent message **published**; ads show on a real device; EU trader status in review). **Marketing went live the same day:** the first batch of 3 Instagram Reels (B-001) is approved and set to post through Trev-HQ → Buffer from Thu 2026-11-12. See *Marketing: AI team pilot*.
+Endless arcade night-driving game ("Stay On"), synthwave/outrun aesthetic. Native iOS app via Capacitor, plus a parallel web build. Last updated 2026-11-11 (**1.0.1 is live on the App Store** with the ad consent fix and Marketing URL; AdMob app-ads.txt **verified**, AdMob app **approved** and EU consent message **published**; ads show on a real device; EU trader status in review). **Marketing went live the same day:** the first batch of 3 Instagram Reels (B-001) is approved and set to post through Trev-HQ → Buffer from Thu 2026-11-12. See *Marketing: AI team pilot*.
 
 ## Current status (2026-11-09) — start here
 
@@ -210,7 +210,7 @@ Stay On is the **first pilot** for the AI marketing team designed by the Claude/
 - **System handover:** `~/Projects/AI_Team/HANDOVER.md`.
 - **Owner checklist:** `~/Projects/AI_Team/NEEDS-FROM-TREVOR.md`.
 
-### Status 2026-11-10: first batch approved, publishing switched on
+### Status 2026-11-11: first batch approved, first post scheduled in Buffer
 
 **What posts, and when.** B-001 has 3 Instagram Reels for @stayondriving, posted at 7pm Eastern:
 
@@ -241,9 +241,14 @@ Results appear in **Inbox → Publishing**. A red note there needs attention. Fu
 - Buffer and Instagram are connected, and `BUFFER_API_KEY` is set in Vercel (Production).
 - The first **Run now** (19:56 UTC) ended "done" with no notes. Buffer accepted the key and found one organization. All 3 posts were reserved with the windows above, and none were handed to Buffer yet (correct).
 
-**Not verified yet:** whether Buffer's Instagram channel name matches `@stayondriving`. The publisher only checks this at hand-off, so the **Wed 11/11 9am ET run** is the first real test.
-- **Pass:** B-001-1 shows **"scheduled in Buffer"**, and Buffer's queue has it for Thu 7pm.
-- **Fail:** a red note "no Buffer instagram channel for @stayondriving", and nothing is sent. Thursday's run is the second try.
+**Verified on 2026-11-11 (first real hand-off):** the 14:00 UTC run handed **B-001-1** to Buffer, so Buffer's Instagram channel matches `@stayondriving`.
+- `publish_actions` row `B-001/B-001-1/instagram`: `status = succeeded`, 1 attempt, no error.
+- Receipt read back from Buffer at 14:00:33 UTC: `status: scheduled`, `due_at` 2026-11-13 00:00 UTC (**Thu 11/12 7pm ET**), Buffer post `6af4750000263add00a5076a`, channel `6af35c1762b70b94b0e5fdd7`.
+- `external_url` is still empty and stays that way until after the post time; the first run after Thu 7pm ET (Fri 9am ET) should record the public link. **Check that on Fri 11/13.**
+- B-001-2 and B-001-3 are still `reserved` (correct); their hand-off windows open Fri 11/13 and Sun 11/15 at 7am ET.
+- If a run ever fails at hand-off, the Inbox shows a red note such as "no Buffer instagram channel for @stayondriving" and nothing is sent.
+
+**Checking from the terminal:** in `~/Projects/Trev-HQ`, run `supabase db query --linked "select action_key,status,error,receipt,external_url from publish_actions order by created_at desc"`. The CLI is linked to project `kcxwnkhrpygnsxbdfmsf`. On 2026-11-11 the `SUPABASE_SERVICE_ROLE_KEY` in Trev-HQ's `.env.local` had stopped working ("Invalid API key", probably rotated); Trevor replaced it with a current `sb_secret_` key, and a REST call returned 200 afterwards. The Vercel copy of the key was never affected. New-style `sb_secret_` keys go in the `apikey` header only, not `Authorization: Bearer`.
 
 **Trevor, by hand:**
 - Before each post, switch the Instagram bio link to that post's campaign link.
