@@ -1,6 +1,6 @@
 # Stay On — Handover
 
-Endless arcade night-driving game ("Stay On"), synthwave/outrun aesthetic. Native iOS app via Capacitor, plus a parallel web build. Last updated 2026-11-11 (**1.0.1 is live on the App Store** with the ad consent fix and Marketing URL; AdMob app-ads.txt **verified**, AdMob app **approved** and EU consent message **published**; ads show on a real device; EU trader status in review). **Marketing went live the same day:** the first batch of 3 Instagram Reels (B-001) is approved and set to post through Trev-HQ → Buffer from Thu 2026-11-12. See *Marketing: AI team pilot*.
+Endless arcade night-driving game ("Stay On"), synthwave/outrun aesthetic. Native iOS app via Capacitor, plus a parallel web build. Last updated 2026-11-18 (**1.0.1 is live on the App Store** with the ad consent fix and Marketing URL; AdMob app-ads.txt **verified**, AdMob app **approved** and EU consent message **published**; ads show on a real device; EU trader status in review). **Marketing went live the same day:** the first batch of 3 Instagram Reels (B-001) is approved and set to post through Trev-HQ → Buffer from Thu 2026-11-12. See *Marketing: AI team pilot*.
 
 ## Current status (2026-11-09) — start here
 
@@ -15,11 +15,17 @@ Endless arcade night-driving game ("Stay On"), synthwave/outrun aesthetic. Nativ
 - **Real-device ad test**: on 2026-11-09 the user installed 1.0.1 from the App Store and reported ads "seem to work". This was a quick check only. The airplane-mode relaunch and the offline fresh install were not reported.
 - **Monitoring check 2026-11-10**: Sentry `stay-on` had **no unresolved issues in 14 days** and no issue seen in the last 24 h, so the real-device ad test caused no crash or error. Vercel `stayondriving` had no toolbar comments and **no runtime errors in 7 days**. The production deploy of PR #25 (`60d3271`) is READY.
 - **Do not tap ads on your own device** (AdMob policy; can suspend the account). Register the phone first: AdMob → **Settings → Test devices → Add test device**, with the phone's IDFA. Not done yet.
-- **Remaining, in order**:
-  1. Register the test device in AdMob (above).
-  2. Finish the ad test: airplane-mode relaunch uses the cached consent value; a fresh install while offline requests no ads.
-  3. EU trader status: still in review; confirm acceptance and EU availability. Once EU storefronts open, the consent message can be checked from an EU user or VPN.
-  4. AdMob Payments → Payments info: not yet confirmed.
+- **Remaining**:
+  1. **Register the test device in AdMob: still open** (the user isn't sure it was ever done; as of 2026-11-18 they'll check AdMob → Settings → Test devices). It was blocked because the ID couldn't be copied from the phone. Workaround: run the app on the device from Xcode, search the Xcode console for `testDeviceIdentifiers`, and copy the quoted ID on the Mac.
+- **Done (reported by the user 2026-11-18)**:
+  - The full ad test: airplane-mode relaunch and offline fresh install.
+  - AdMob Payments → Payments info.
+  - The EU consent message check.
+- **EU trader status accepted; app live in the EU.** Checked 2026-11-18: `itunes.apple.com/lookup?id=6801365584&country=de` (and `fr`, `it`) each return the listing.
+- **Early numbers (2026-11-18)**:
+  - AdMob, last 7 days: $0.06 from 8 impressions (9 requests, 100% match rate). The week before was about $0.31 from 18 impressions, which included the 11-09 launch and the user's own testing.
+  - RevenueCat, last 28 days: 10 active users, 9 new customers, $0 revenue (no Remove Ads purchases yet).
+  - The setup works end to end. **The bottleneck is installs**, not monetization.
 - **Sentry noise from the simulator**: issues STAY-ON-2, STAY-ON-3 and STAY-ON-6 ("App Hang") were all from the **iOS 27 simulator on this Mac** (`build_type: simulator`), running 1.0.1, launched 2026-11-07 18:08 UTC during the simulator pass and left in the foreground. They were resolved on 2026-11-09 and the simulator was no longer booted. Simulator builds reported as `environment: production` because the web bundle is always a production Vite build. **Fixed after 1.0.1** (PR #23, merged to `main` 2026-11-09 as `3481151`): `BuildChannel.buildInfo()` returns compile-time `simulator`/`debug` flags at once, and `mobile/src/main.tsx` waits for it before `Sentry.init`. The environment is now `simulator`, `development` (Debug device builds) or `production`. Every event also gets a `build_channel` tag (`appstore`/`testflight`/`xcode`/`simulator`). It ships with the next App Store build; 1.0.1 still reports simulator runs as production. Checked on the iOS 27 simulator: `buildInfo` returned `{"simulator":true,"debug":true}` before `initNativeSdk`.
 - **Build env 2026-11-09**:
   - The context-mode plugin's hooks need **Node 24.15+**. With Homebrew Node 24.1.0 its hook failed (`NODE_TOO_OLD`) and blocked every Bash and WebFetch call. Fixed by `brew upgrade node` (now **26.13.0**). Homebrew also replaced `npm`/`npx`, backing up the old ones to `~/Library/Caches/Homebrew/Backup`.
