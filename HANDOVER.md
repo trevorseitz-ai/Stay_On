@@ -44,18 +44,23 @@ Endless arcade night-driving game ("Stay On"), synthwave/outrun aesthetic. Nativ
   - Release archive: 1.0.1 / `202611061430`, with `App.SceneDelegate`, `GADApplicationIdentifier` and `ITSAppUsesNonExemptEncryption` = false.
   - Uploaded with the CLI `xcodebuild -exportArchive` flow from the TestFlight section ("Upload succeeded", symbols included). `fastlane beta` was not used because it bumps the build number.
   - Before archiving, App Store Connect's highest build was still `202610151246`.
-  - **Next**: once Apple finishes processing, attach the build to 1.0.1 and **submit for review**. If this file still says so, check the build's processing state and the version's state before redoing anything.
-- **App Store Connect**: version **1.0.1** (`PREPARE_FOR_SUBMISSION`, release type `AFTER_APPROVAL`):
+- **Submitted for review 2026-11-07**, all through the App Store Connect API (Spaceship):
+  - The build reached `VALID` (processed). Export compliance was already answered (`usesNonExemptEncryption` = false).
+  - The build was attached to 1.0.1 with `select_build`. Before submitting, these were checked: minimal What's New; Marketing and Support URLs; review notes (1,992 chars, cover Remove Ads); contact email and phone.
+  - A new review submission was created with 1.0.1 as its only item and submitted. Afterwards both the submission and the version showed **`WAITING_FOR_REVIEW`**.
+  - Approved and released automatically by 2026-11-09 (see Current status).
+- **Gotcha when checking whether a build has finished processing:** `Spaceship::ConnectAPI::Build.all(app_id:, version: "…")` returned nothing for the new build, so a polling loop built on it waited a full hour for a build that was already `VALID`. `Build.all(sort: "-uploadedDate", limit: 3)` also ignored its arguments and returned the oldest builds. Query the API directly instead: `tunes_request_client.get("v1/builds", { "filter[app]" => app.id, "filter[version]" => "<build number>" })`, then read `attributes.processingState`.
+- **App Store Connect**: version **1.0.1** (now `READY_FOR_SALE`; release type `AFTER_APPROVAL`):
   - What's New was switched through the API on 2026-11-07 to the **minimal** notes: "• Better handling of ad privacy consent, including when offline. • Minor fixes and stability improvements." The full notes claim "Ads load more reliably", which isn't true before AdMob approval. Both versions are in `Stay_On_iOS/release-notes/1.0.1.md`.
   - Marketing URL is **`https://stayondriving.com`**. It was first saved with a trailing period, then fixed.
 - **Why 1.0.1 ships before AdMob approval**: on 2026-11-07 AdMob showed **"We couldn't verify Stay On Driving (iOS)"** ("your details don't match the information in your AdMob account"). The file is fine: `stayondriving.com/app-ads.txt` serves exactly AdMob's line as `text/plain`, with no BOM or CR; `http://`, `www` and `http://www` all 308-redirect to it; `robots.txt` blocks nothing. The live 1.0 listing has no developer website (the iTunes lookup has no `sellerUrl`), so AdMob can't find the file. App verification probably has to pass before AdMob approves the app, which made a deadlock. 1.0.1 breaks it by shipping the Marketing URL. The consent fix fails safe (no stored consent means no ads) and passed the iOS 27 simulator run.
 - **Why the Marketing URL matters**: 1.0 shipped with **no Marketing URL**, so the App Store listing shows no developer website. AdMob looks for `app-ads.txt` on that website, so verification can't succeed until 1.0.1 (which has the URL) is live. `https://stayondriving.com/app-ads.txt` itself is live and correct (`google.com, pub-4738248194115302, DIRECT, f08c47fec0942fa0`). The Marketing URL can't be changed on a live version, so it needs an update. Whether AdMob would fall back to the Support URL's domain is unconfirmed.
-- **Remaining, in order**:
-  1. Build processed → attach it to 1.0.1 → submit for review.
-  2. When 1.0.1 is live: confirm the listing shows the developer website (the iTunes lookup has a `sellerUrl`), then click **Check for updates** in AdMob's app-ads.txt panel.
-  3. AdMob approval shows **Ready**, then publish the EU consent message (step 2 below).
-  4. Real-device ad test (step 3 below), including the airplane-mode relaunch and the offline fresh install.
-  5. Merge PR #19 once 1.0.1 is approved.
+- **The plan as of 2026-11-07, and what happened** (details in Current status):
+  1. ~~Build processed → attach it to 1.0.1 → submit for review.~~ Done 2026-11-07.
+  2. ~~When 1.0.1 is live, check the listing shows the developer website, then **Check for updates** in AdMob.~~ Done 2026-11-09: app-ads.txt verified.
+  3. ~~AdMob approval shows **Ready**, then publish the EU consent message.~~ Done 2026-11-09.
+  4. Real-device ad test: only a quick check so far (ads "seem to work" on 2026-11-09). The airplane-mode relaunch and the offline fresh install are still untested.
+  5. ~~Merge PR #19 once 1.0.1 is approved.~~ Merged 2026-11-09 (`8c1ad93`).
 
 ### AdMob (as of 2026-11-07)
 
