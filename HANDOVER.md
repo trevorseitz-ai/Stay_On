@@ -2,7 +2,30 @@
 
 Endless arcade night-driving game ("Stay On"), synthwave/outrun aesthetic. Native iOS app via Capacitor, plus a parallel web build. Last updated 2026-11-18 (**1.0.1 is live on the App Store**, including the EU; **1.0.2 is submitted** with new App Store listing text (ASO) and the Sentry fix; AdMob app-ads.txt **verified**, AdMob app **approved**, EU consent message **published**; ads show on a real device). **Marketing went live the same day:** the first batch of 3 Instagram Reels (B-001) is approved and set to post through Trev-HQ → Buffer from Thu 2026-11-12. See *Marketing: AI team pilot*.
 
-## Current status (2026-11-09) — start here
+## Current status (2026-11-18) — start here
+
+### 1.0.2: submitted 2026-11-18 (`WAITING_FOR_REVIEW`)
+
+- **Why:** the 2026-11-18 numbers (see "Early numbers" below) show the bottleneck is installs, so 1.0.2 is mainly an **App Store search (ASO) update**. Apple's search only uses name, subtitle and keywords; Apple locks those, and the description, on a live version, which is why a new version was needed.
+- **Listing text** (set through the API on the 1.0.2 draft and read back before submitting; full text and reasoning in `Stay_On_iOS/release-notes/1.0.2.md` on `release/1.0.2`):
+  - **Name:** `Stay On Driving` → **`Stay On Driving: Neon Racer`** (27/30). Only the App Store listing changes; the home-screen name stays the same.
+  - **Subtitle:** `Retro Arcade Driving Challenge` → **`Endless Retro Arcade Racer`** (26/30).
+  - **Keywords:** 67/100 with 4 words duplicated from the name and subtitle → **`synthwave,outrun,highway,road,car,steer,swerve,reflex,tap,casual,offline,80s,vaporwave,speed,lane`** (97/100, no overlap with the name or subtitle).
+  - **Description:** rewritten around the one-touch controls, three difficulty levels, synthwave soundtrack, Top 5 board, offline play and the one-time Remove Ads purchase (670 chars).
+  - **What's New:** "• Stability and crash-reporting improvements. • Minor fixes."
+- **Promotional text** (130/170) was set on the **live 1.0.1** listing on 2026-11-18. That field doesn't need review. It was carried into 1.0.2: "Hold to steer left, release to steer right. How far can you stay on the neon road? Pick Easy, Medium or Hard and chase your Top 5."
+- **App code:** only the Sentry environment fix (`5aac4b8`, PR #23).
+- **Build:** 1.0.2 / **`202611182248`** from `release/1.0.2` @ `c3f8e9b`, using the same CLI archive and `xcodebuild -exportArchive` upload as 1.0.1.
+  - Checks: `npm run build`, `npx cap sync ios`, and the iOS 27.0 simulator (still running 15 s after launch, no crash report). The simulator was **shut down afterwards** to avoid the Sentry "App Hang" noise from 1.0.1's simulator run.
+  - Processing reached `VALID` in about 3 min. It was tracked with the `v1/builds` + `filter[version]` query (see the 1.0.1 gotcha below).
+  - The build was attached, the fields checked (name, subtitle, keywords, What's New, Marketing URL, review notes, contact), then submitted 2026-11-18. Release type `AFTER_APPROVAL`.
+- **Draft PR #35** (`release/1.0.2`). Merge it once 1.0.2 is approved.
+- **Next:**
+  1. When 1.0.2 is live, check the listing shows the new name and subtitle, merge PR #35, and update this file.
+  2. After 2–4 weeks, compare search impressions and downloads before and after the new keywords (App Store Connect → Analytics).
+  3. The next biggest boost to downloads: use all 10 screenshots (only 5 now, all 6.7") and add an App Preview video. Ship them with a later version.
+
+### Earlier status (2026-11-09 to 11-18)
 
 - **1.0.1 is live.** App Store Connect shows **Ready for Distribution**, and the public listing shows 1.0.1 with a **Developer Website** link (`stayondriving.com`). This broke the AdMob deadlock described below.
 - **AdMob app-ads.txt verified** on 2026-11-09 ("Your pub ID was found and app-ads.txt verified"), after one **Check for updates**. App approval status is now **"Getting ready"** (Google's app review, usually a few days).
