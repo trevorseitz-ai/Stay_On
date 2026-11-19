@@ -1,13 +1,13 @@
 # Stay On — Handover
 
-Endless arcade night-driving game ("Stay On"), synthwave/outrun aesthetic. Native iOS app via Capacitor, plus a parallel web build. Last updated 2026-11-18 (**1.0.1 is live on the App Store** with the ad consent fix and Marketing URL; AdMob app-ads.txt **verified**, AdMob app **approved** and EU consent message **published**; ads show on a real device; EU trader status in review). **Marketing went live the same day:** the first batch of 3 Instagram Reels (B-001) is approved and set to post through Trev-HQ → Buffer from Thu 2026-11-12. See *Marketing: AI team pilot*.
+Endless arcade night-driving game ("Stay On"), synthwave/outrun aesthetic. Native iOS app via Capacitor, plus a parallel web build. Last updated 2026-11-18 (**1.0.1 is live on the App Store**, including the EU; **1.0.2 is submitted** with new App Store listing text (ASO) and the Sentry fix; AdMob app-ads.txt **verified**, AdMob app **approved**, EU consent message **published**; ads show on a real device). **Marketing went live the same day:** the first batch of 3 Instagram Reels (B-001) is approved and set to post through Trev-HQ → Buffer from Thu 2026-11-12. See *Marketing: AI team pilot*.
 
 ## Current status (2026-11-09) — start here
 
 - **1.0.1 is live.** App Store Connect shows **Ready for Distribution**, and the public listing shows 1.0.1 with a **Developer Website** link (`stayondriving.com`). This broke the AdMob deadlock described below.
 - **AdMob app-ads.txt verified** on 2026-11-09 ("Your pub ID was found and app-ads.txt verified"), after one **Check for updates**. App approval status is now **"Getting ready"** (Google's app review, usually a few days).
 - **PR #19 merged** to `main` on 2026-11-09 (merge commit `8c1ad93`), so `main` matches the shipped 1.0.1.
-- **`main` is now ahead of 1.0.1** by the Sentry environment fix (PR #23, see below). It is native and JS code, so it ships only with the next App Store build. No new version or build number has been set for it yet.
+- **`main` was ahead of 1.0.1** by the Sentry environment fix (PR #23, see below). It ships in **1.0.2** (submitted 2026-11-18; see above).
 - **AdMob approved the app** on the evening of 2026-11-09.
 - **EU consent message published** 2026-11-09 (Privacy & messaging → European regulations → Messages; "Untitled European regulations message", app Stay On Driving, English, Status **Published**). The message editor had **no privacy policy URL field**: selecting the app under Setup → Your apps was enough. If a URL is ever needed, look in the **Settings** tab on that page.
   - It shows only to users in the EEA, UK and Switzerland, so a US device never sees it.
@@ -168,7 +168,7 @@ Both `Stay_On_iOS/mobile/src/App.tsx` and `Stay_On_iOS/source/app/page.tsx` cont
 
 ## App Store submission gotchas (learned 2026-09-25)
 
-- **Build numbers** are UTC-ish timestamps (`YYYYMMDDHHMM`), in `CURRENT_PROJECT_VERSION` in `App.xcodeproj/project.pbxproj` (Debug + Release). Last uploaded: `202610151246` (1.0, 2026-10-15, PR #12), which was still the highest build in App Store Connect on 2026-11-06. Then **`202611061430`** (1.0.1, `release/1.0.1`, PR #19), **uploaded 2026-11-07**. The next build must be higher than that. **A build number can't be reused once uploaded**, even if that build was never submitted. Before archiving, check that the number in `project.pbxproj` hasn't already been uploaded: `202610131852` had been, and the export failed with "bundle version must be higher than the previously uploaded version".
+- **Build numbers** are UTC-ish timestamps (`YYYYMMDDHHMM`), in `CURRENT_PROJECT_VERSION` in `App.xcodeproj/project.pbxproj` (Debug + Release). Last uploaded: `202610151246` (1.0, 2026-10-15, PR #12), which was still the highest build in App Store Connect on 2026-11-06. Then `202611061430` (1.0.1, `release/1.0.1`, PR #19, uploaded 2026-11-07), then **`202611182248`** (1.0.2, `release/1.0.2`, PR #35, **uploaded 2026-11-18**). The next build must be higher than that. **A build number can't be reused once uploaded**, even if that build was never submitted. Before archiving, check that the number in `project.pbxproj` hasn't already been uploaded: `202610131852` had been, and the export failed with "bundle version must be higher than the previously uploaded version".
 - **Test launch on the newest iOS before submitting.** Apple reviews on the latest iOS (27.0 as of 2026-10), not the version on the dev phone. The Xcode 27 install has an iOS 27.0 simulator runtime.
 - **The first IAP must be in the same review submission as an app version.** The flow that worked:
   1. If the version is stuck in a rejected or unresolved submission, **remove it from review first**. Use the "remove this version" link on the version page, or remove it on the App Review submission page. The version becomes *Developer Rejected*.
