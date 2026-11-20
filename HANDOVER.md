@@ -1,13 +1,36 @@
 # Stay On — Handover
 
-Endless arcade night-driving game ("Stay On"), synthwave/outrun aesthetic. Native iOS app via Capacitor, plus a parallel web build. Last updated 2026-11-11 (**1.0.1 is live on the App Store** with the ad consent fix and Marketing URL; AdMob app-ads.txt **verified**, AdMob app **approved** and EU consent message **published**; ads show on a real device; EU trader status in review). **Marketing went live the same day:** the first batch of 3 Instagram Reels (B-001) is approved and set to post through Trev-HQ → Buffer from Thu 2026-11-12. See *Marketing: AI team pilot*.
+Endless arcade night-driving game ("Stay On"), synthwave/outrun aesthetic. Native iOS app via Capacitor, plus a parallel web build. Last updated 2026-11-18 (**1.0.1 is live on the App Store**, including the EU; **1.0.2 is submitted** with new App Store listing text (ASO) and the Sentry fix; AdMob app-ads.txt **verified**, AdMob app **approved**, EU consent message **published**; ads show on a real device). **Marketing went live the same day:** the first batch of 3 Instagram Reels (B-001) is approved and set to post through Trev-HQ → Buffer from Thu 2026-11-12. See *Marketing: AI team pilot*.
 
-## Current status (2026-11-09) — start here
+## Current status (2026-11-18) — start here
+
+### 1.0.2: submitted 2026-11-18 (`WAITING_FOR_REVIEW`)
+
+- **Why:** the 2026-11-18 numbers (see "Early numbers" below) show the bottleneck is installs, so 1.0.2 is mainly an **App Store search (ASO) update**. Apple's search only uses name, subtitle and keywords; Apple locks those, and the description, on a live version, which is why a new version was needed.
+- **Listing text** (set through the API on the 1.0.2 draft and read back before submitting; full text and reasoning in `Stay_On_iOS/release-notes/1.0.2.md` on `release/1.0.2`):
+  - **Name:** `Stay On Driving` → **`Stay On Driving: Neon Racer`** (27/30). Only the App Store listing changes; the home-screen name stays the same.
+  - **Subtitle:** `Retro Arcade Driving Challenge` → **`Endless Retro Arcade Racer`** (26/30).
+  - **Keywords:** 67/100 with 4 words duplicated from the name and subtitle → **`synthwave,outrun,highway,road,car,steer,swerve,reflex,tap,casual,offline,80s,vaporwave,speed,lane`** (97/100, no overlap with the name or subtitle).
+  - **Description:** rewritten around the one-touch controls, three difficulty levels, synthwave soundtrack, Top 5 board, offline play and the one-time Remove Ads purchase (670 chars).
+  - **What's New:** "• Stability and crash-reporting improvements. • Minor fixes."
+- **Promotional text** (130/170) was set on the **live 1.0.1** listing on 2026-11-18. That field doesn't need review. It was carried into 1.0.2: "Hold to steer left, release to steer right. How far can you stay on the neon road? Pick Easy, Medium or Hard and chase your Top 5."
+- **App code:** only the Sentry environment fix (`5aac4b8`, PR #23).
+- **Build:** 1.0.2 / **`202611182248`** from `release/1.0.2` @ `c3f8e9b`, using the same CLI archive and `xcodebuild -exportArchive` upload as 1.0.1.
+  - Checks: `npm run build`, `npx cap sync ios`, and the iOS 27.0 simulator (still running 15 s after launch, no crash report). The simulator was **shut down afterwards** to avoid the Sentry "App Hang" noise from 1.0.1's simulator run.
+  - Processing reached `VALID` in about 3 min. It was tracked with the `v1/builds` + `filter[version]` query (see the 1.0.1 gotcha below).
+  - The build was attached, the fields checked (name, subtitle, keywords, What's New, Marketing URL, review notes, contact), then submitted 2026-11-18. Release type `AFTER_APPROVAL`.
+- **Draft PR #35** (`release/1.0.2`). Merge it once 1.0.2 is approved.
+- **Next:**
+  1. When 1.0.2 is live, check the listing shows the new name and subtitle, merge PR #35, and update this file.
+  2. After 2–4 weeks, compare search impressions and downloads before and after the new keywords (App Store Connect → Analytics).
+  3. The next biggest boost to downloads: use all 10 screenshots (only 5 now, all 6.7") and add an App Preview video. Ship them with a later version.
+
+### Earlier status (2026-11-09 to 11-18)
 
 - **1.0.1 is live.** App Store Connect shows **Ready for Distribution**, and the public listing shows 1.0.1 with a **Developer Website** link (`stayondriving.com`). This broke the AdMob deadlock described below.
 - **AdMob app-ads.txt verified** on 2026-11-09 ("Your pub ID was found and app-ads.txt verified"), after one **Check for updates**. App approval status is now **"Getting ready"** (Google's app review, usually a few days).
 - **PR #19 merged** to `main` on 2026-11-09 (merge commit `8c1ad93`), so `main` matches the shipped 1.0.1.
-- **`main` is now ahead of 1.0.1** by the Sentry environment fix (PR #23, see below). It is native and JS code, so it ships only with the next App Store build. No new version or build number has been set for it yet.
+- **`main` was ahead of 1.0.1** by the Sentry environment fix (PR #23, see below). It ships in **1.0.2** (submitted 2026-11-18; see above).
 - **AdMob approved the app** on the evening of 2026-11-09.
 - **EU consent message published** 2026-11-09 (Privacy & messaging → European regulations → Messages; "Untitled European regulations message", app Stay On Driving, English, Status **Published**). The message editor had **no privacy policy URL field**: selecting the app under Setup → Your apps was enough. If a URL is ever needed, look in the **Settings** tab on that page.
   - It shows only to users in the EEA, UK and Switzerland, so a US device never sees it.
@@ -15,11 +38,17 @@ Endless arcade night-driving game ("Stay On"), synthwave/outrun aesthetic. Nativ
 - **Real-device ad test**: on 2026-11-09 the user installed 1.0.1 from the App Store and reported ads "seem to work". This was a quick check only. The airplane-mode relaunch and the offline fresh install were not reported.
 - **Monitoring check 2026-11-10**: Sentry `stay-on` had **no unresolved issues in 14 days** and no issue seen in the last 24 h, so the real-device ad test caused no crash or error. Vercel `stayondriving` had no toolbar comments and **no runtime errors in 7 days**. The production deploy of PR #25 (`60d3271`) is READY.
 - **Do not tap ads on your own device** (AdMob policy; can suspend the account). Register the phone first: AdMob → **Settings → Test devices → Add test device**, with the phone's IDFA. Not done yet.
-- **Remaining, in order**:
-  1. Register the test device in AdMob (above).
-  2. Finish the ad test: airplane-mode relaunch uses the cached consent value; a fresh install while offline requests no ads.
-  3. EU trader status: still in review; confirm acceptance and EU availability. Once EU storefronts open, the consent message can be checked from an EU user or VPN.
-  4. AdMob Payments → Payments info: not yet confirmed.
+- **Remaining**:
+  1. **Register the test device in AdMob: still open** (the user isn't sure it was ever done; as of 2026-11-18 they'll check AdMob → Settings → Test devices). It was blocked because the ID couldn't be copied from the phone. Workaround: run the app on the device from Xcode, search the Xcode console for `testDeviceIdentifiers`, and copy the quoted ID on the Mac.
+- **Done (reported by the user 2026-11-18)**:
+  - The full ad test: airplane-mode relaunch and offline fresh install.
+  - AdMob Payments → Payments info.
+  - The EU consent message check.
+- **EU trader status accepted; app live in the EU.** Checked 2026-11-18: `itunes.apple.com/lookup?id=6801365584&country=de` (and `fr`, `it`) each return the listing.
+- **Early numbers (2026-11-18)**:
+  - AdMob, last 7 days: $0.06 from 8 impressions (9 requests, 100% match rate). The week before was about $0.31 from 18 impressions, which included the 11-09 launch and the user's own testing.
+  - RevenueCat, last 28 days: 10 active users, 9 new customers, $0 revenue (no Remove Ads purchases yet).
+  - The setup works end to end. **The bottleneck is installs**, not monetization.
 - **Sentry noise from the simulator**: issues STAY-ON-2, STAY-ON-3 and STAY-ON-6 ("App Hang") were all from the **iOS 27 simulator on this Mac** (`build_type: simulator`), running 1.0.1, launched 2026-11-07 18:08 UTC during the simulator pass and left in the foreground. They were resolved on 2026-11-09 and the simulator was no longer booted. Simulator builds reported as `environment: production` because the web bundle is always a production Vite build. **Fixed after 1.0.1** (PR #23, merged to `main` 2026-11-09 as `3481151`): `BuildChannel.buildInfo()` returns compile-time `simulator`/`debug` flags at once, and `mobile/src/main.tsx` waits for it before `Sentry.init`. The environment is now `simulator`, `development` (Debug device builds) or `production`. Every event also gets a `build_channel` tag (`appstore`/`testflight`/`xcode`/`simulator`). It ships with the next App Store build; 1.0.1 still reports simulator runs as production. Checked on the iOS 27 simulator: `buildInfo` returned `{"simulator":true,"debug":true}` before `initNativeSdk`.
 - **Build env 2026-11-09**:
   - The context-mode plugin's hooks need **Node 24.15+**. With Homebrew Node 24.1.0 its hook failed (`NODE_TOO_OLD`) and blocked every Bash and WebFetch call. Fixed by `brew upgrade node` (now **26.13.0**). Homebrew also replaced `npm`/`npx`, backing up the old ones to `~/Library/Caches/Homebrew/Backup`.
@@ -162,7 +191,7 @@ Both `Stay_On_iOS/mobile/src/App.tsx` and `Stay_On_iOS/source/app/page.tsx` cont
 
 ## App Store submission gotchas (learned 2026-09-25)
 
-- **Build numbers** are UTC-ish timestamps (`YYYYMMDDHHMM`), in `CURRENT_PROJECT_VERSION` in `App.xcodeproj/project.pbxproj` (Debug + Release). Last uploaded: `202610151246` (1.0, 2026-10-15, PR #12), which was still the highest build in App Store Connect on 2026-11-06. Then **`202611061430`** (1.0.1, `release/1.0.1`, PR #19), **uploaded 2026-11-07**. The next build must be higher than that. **A build number can't be reused once uploaded**, even if that build was never submitted. Before archiving, check that the number in `project.pbxproj` hasn't already been uploaded: `202610131852` had been, and the export failed with "bundle version must be higher than the previously uploaded version".
+- **Build numbers** are UTC-ish timestamps (`YYYYMMDDHHMM`), in `CURRENT_PROJECT_VERSION` in `App.xcodeproj/project.pbxproj` (Debug + Release). Last uploaded: `202610151246` (1.0, 2026-10-15, PR #12), which was still the highest build in App Store Connect on 2026-11-06. Then `202611061430` (1.0.1, `release/1.0.1`, PR #19, uploaded 2026-11-07), then **`202611182248`** (1.0.2, `release/1.0.2`, PR #35, **uploaded 2026-11-18**). The next build must be higher than that. **A build number can't be reused once uploaded**, even if that build was never submitted. Before archiving, check that the number in `project.pbxproj` hasn't already been uploaded: `202610131852` had been, and the export failed with "bundle version must be higher than the previously uploaded version".
 - **Test launch on the newest iOS before submitting.** Apple reviews on the latest iOS (27.0 as of 2026-10), not the version on the dev phone. The Xcode 27 install has an iOS 27.0 simulator runtime.
 - **The first IAP must be in the same review submission as an app version.** The flow that worked:
   1. If the version is stuck in a rejected or unresolved submission, **remove it from review first**. Use the "remove this version" link on the version page, or remove it on the App Review submission page. The version becomes *Developer Rejected*.
