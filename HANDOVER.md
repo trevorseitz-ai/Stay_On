@@ -25,6 +25,58 @@ Endless arcade night-driving game ("Stay On"), synthwave/outrun aesthetic. Nativ
   2. After 2–4 weeks, compare search impressions and downloads before and after the new keywords (App Store Connect → Analytics).
   3. The next biggest boost to downloads: use all 10 screenshots (only 5 now, all 6.7") and add an App Preview video. Ship them with a later version.
 
+### Launch metrics (checked 2026-11-18)
+
+The first week was very quiet. See also "Early numbers" under Earlier status for AdMob and RevenueCat. PostHog (project 574372, "Default project") has the per-player numbers:
+
+| Source (`build_channel`) | Players | Runs | Window |
+|---|---|---|---|
+| `appstore` | 4 (one is Trevor's phone, installed 11/09) | 17 | 2026-11-09 → 11-12 |
+| TestFlight, simulator, `unknown`, untagged | ~4 | 13 | 2026-11-05 → 11-12 |
+
+- About **3 outside players** in week one. This matches RevenueCat's 9 new customers in 28 days, most of them test installs.
+- **No PostHog events after 2026-11-12 22:36 UTC.** That is about 1.5 h before the first Reel was due (Nov 13 00:00 UTC). Nothing shows the Reels brought anyone in.
+- **Open question: was the app really unused after Nov 12, or did PostHog stop recording?** AdMob shows 8 impressions in the 7 days to 11-18. If any came after Nov 12, someone played while PostHog recorded nothing.
+  - What was checked: the app's `VITE_POSTHOG_KEY` (in `.env` and in the built bundle) matches the project, PostHog accepts it, and App Store events arrived from 11/09 to 11/12.
+  - **Deciding test:** open the app on the phone, play one run, and confirm it shows up in PostHog. Not done yet.
+- `build_channel` is already on PostHog events in 1.0.1. Filter on `build_channel = 'appstore'` for real players. `$app_version` and `$device_model` are not recorded.
+- App Store listing: **0 ratings** (iTunes lookup).
+
+**Metrics we can't see yet, and why:**
+- **App Store impressions, page views and downloads.**
+  - The ASC API key in `fastlane/.env` gets **403** on `analyticsReportRequests`. Those reports need an **Admin** key, and the first report takes 24–48 h after it's requested.
+  - `salesReports` isn't refused, but it needs the **vendor number** (App Store Connect → Payments and Financial Reports). The number isn't recorded anywhere yet.
+  - Until then, use ASC → Analytics by hand. Sources → Campaigns shows the bio-link `ct` values `b001-1/2/3`.
+- **Website clicks.** Vercel Web Analytics is **not enabled** on `stayondriving` (`web_analytics_not_enabled`). Turning it on is the cheap fix. Traffic from before that is lost.
+- **Instagram views.** Nothing collects them. Trev-HQ only records whether a post went out and its link.
+  - Whether B-001-1/2/3 actually posted was **not checked**: the permission check blocked reading Trev-HQ's Supabase with the service-role key.
+  - To check by hand: Inbox → Publishing, or `supabase db query --linked` as described in `~/Projects/AI_Team/HANDOVER.md`.
+
+**Next: post stats in Trev-HQ (planned, not built).**
+- Buffer's GraphQL API has `Post.metrics { type value unit }` and `metricsUpdatedAt`, refreshed daily.
+  - Metrics include `views`, `impressions`, `reach`, `comments`, `reactions`, `saves`, `shares` and `engagementRate`.
+  - They need a **personal** API key. The docs mention no plan limit, but whether Buffer Free returns metrics is **unverified**.
+  - The query is in Buffer's `examples/get-posts-with-metrics` doc.
+- **Blocked on a Buffer key on this Mac.**
+  - Trev-HQ's `BUFFER_API_KEY` is a Vercel **Sensitive** variable, so it can't be pulled: `vercel env pull` writes `[SENSITIVE]` instead. That placeholder was removed from `.env.local`.
+  - Trevor will create a second personal key ("Trev-HQ local stats") and add it to `~/Projects/Trev-HQ/.env.local` without pasting it in chat.
+  - Then run a read-only check that lists the channels and the sent posts with their metrics.
+- **Plan:**
+  1. The test call above.
+  2. A daily stats table keyed to `publish_actions`.
+  3. Read-only collection in the 14:00 UTC run, for posts from the last 30 days.
+  4. A stats panel in Inbox → Publishing.
+  5. Feed the results to the drafting agents.
+
+**More social channels.**
+- Accounts exist on Instagram, TikTok, YouTube and X, all `@stayondriving` with 2FA on.
+- Only **Instagram** is connected to Buffer. Buffer Free allows 3 channels.
+- Trev-HQ's publisher supports `instagram`, `tiktok` and `youtube` (YouTube needs a `title`). It does **not** support X.
+- To add TikTok and YouTube:
+  1. Trevor connects them in Buffer. Agents never connect accounts.
+  2. Trevor approves widening the pilot beyond one channel (`AI_Team/NEEDS-FROM-TREVOR.md`).
+  3. The agents draft batches for each network.
+
 ### Earlier status (2026-11-09 to 11-18)
 
 - **1.0.1 is live.** App Store Connect shows **Ready for Distribution**, and the public listing shows 1.0.1 with a **Developer Website** link (`stayondriving.com`). This broke the AdMob deadlock described below.
