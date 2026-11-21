@@ -47,9 +47,11 @@ The first week was very quiet. See also "Early numbers" under Earlier status for
 
 - About **3 outside players** in week one. This matches RevenueCat's 9 new customers in 28 days, most of them test installs.
 - **No PostHog events after 2026-11-12 22:36 UTC.** That is about 1.5 h before the first Reel was due (Nov 13 00:00 UTC). Nothing shows the Reels brought anyone in.
-- **Open question: was the app really unused after Nov 12, or did PostHog stop recording?** AdMob shows 8 impressions in the 7 days to 11-18. If any came after Nov 12, someone played while PostHog recorded nothing.
-  - What was checked: the app's `VITE_POSTHOG_KEY` (in `.env` and in the built bundle) matches the project, PostHog accepts it, and App Store events arrived from 11/09 to 11/12.
-  - **Deciding test:** open the app on the phone, play one run, and confirm it shows up in PostHog. Not done yet.
+- **Is PostHog still recording? Yes (checked 2026-11-21).** Trevor played a run on 1.0.2 from the App Store and it arrived within seconds (`run_started` 17:52 UTC, `build_channel = appstore`).
+  - App Store events per day: Nov 10: 31 events, 7 runs, 1 player. Nov 11: 19, 4, 2. Nov 12: 12, 4, 1. **Nov 13–20: none.** Nov 21: 11, 3, 1 (all Trevor's test runs).
+  - So the empty Nov 13–20 most likely means nobody played. This fits the Reels (about 110 views each, no likes, comments, saves or shares). The bottleneck is installs, not tracking.
+  - **Not fully ruled out:** a recording gap on 1.0.1 only (today's test ran on 1.0.2), and AdMob's 8 impressions in the 7 days to 11-18, which may all be from Nov 11–12. If any were Nov 13–18, someone played unrecorded.
+  - Earlier checks: the app's `VITE_POSTHOG_KEY` (in `.env` and in the built bundle) matches the project, and PostHog accepts it.
 - `build_channel` is already on PostHog events in 1.0.1. Filter on `build_channel = 'appstore'` for real players. `$app_version` and `$device_model` are not recorded.
 - App Store listing: **0 ratings** (iTunes lookup).
 
