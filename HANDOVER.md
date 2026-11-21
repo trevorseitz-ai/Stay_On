@@ -58,7 +58,10 @@ The first week was very quiet. See also "Early numbers" under Earlier status for
   - The ASC API key in `fastlane/.env` gets **403** on `analyticsReportRequests`. Those reports need an **Admin** key, and the first report takes 24–48 h after it's requested.
   - `salesReports` isn't refused, but it needs the **vendor number** (App Store Connect → Payments and Financial Reports). The number isn't recorded anywhere yet.
   - Until then, use ASC → Analytics by hand. Sources → Campaigns shows the bio-link `ct` values `b001-1/2/3`.
-- **Website clicks.** Vercel Web Analytics is **not enabled** on `stayondriving` (`web_analytics_not_enabled`). Turning it on is the cheap fix. Traffic from before that is lost.
+- **Website visits:** Vercel Web Analytics has been **on since 2026-11-21**. See the `stayondriving` project's Analytics tab. Visits before then weren't counted.
+  - The site is plain HTML. PR #39 added Vercel's two-line script (`/_vercel/insights/script.js`) to every page, and a "This website" section to `/privacy`. Ignore the dashboard's `import { Analytics } from "@vercel/analytics/next"` snippet: it's for Next.js apps.
+  - The first visit was counted on 2026-11-21 (`count_pageviews`: 1 visitor, 1 page view).
+  - **Deploy gotcha:** the project's Root Directory was set to `Marketing/site`, so `vercel --prod` from inside `Marketing/site` failed ("Root Directory … does not exist"). It's now cleared (set to null with `vercel api … PATCH`), so the site README's deploy from `Marketing/site` works again. Clearing the field in the dashboard didn't stick.
 - **Instagram views:** now collected daily by Trev-HQ (see *Post stats in Trev-HQ* below).
 
 **Post stats in Trev-HQ (live since 2026-11-21).**
