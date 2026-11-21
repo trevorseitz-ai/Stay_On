@@ -1,6 +1,6 @@
 # Stay On — Handover
 
-Endless arcade night-driving game ("Stay On"), synthwave/outrun aesthetic. Native iOS app via Capacitor, plus a parallel web build. Last updated 2026-11-21 (**1.0.2 is live on the App Store** as "Stay On Driving: Neon Racer", including the EU, with new App Store listing text (ASO) and the Sentry fix; AdMob app-ads.txt **verified**, AdMob app **approved**, EU consent message **published**; ads show on a real device). **Marketing went live the same day:** the first batch of 3 Instagram Reels (B-001) is approved and set to post through Trev-HQ → Buffer from Thu 2026-11-12. See *Marketing: AI team pilot*.
+Endless arcade night-driving game ("Stay On"), synthwave/outrun aesthetic. Native iOS app via Capacitor, plus a parallel web build. Last updated 2026-11-21 (**Trev-HQ now collects Instagram post stats daily; the first 3 Reels got ~110 views each and no likes, comments, saves or shares**; **1.0.2 is live on the App Store** as "Stay On Driving: Neon Racer", including the EU, with new App Store listing text (ASO) and the Sentry fix; AdMob app-ads.txt **verified**, AdMob app **approved**, EU consent message **published**; ads show on a real device). **Marketing went live the same day:** the first batch of 3 Instagram Reels (B-001) is approved and set to post through Trev-HQ → Buffer from Thu 2026-11-12. See *Marketing: AI team pilot*.
 
 ## Current status (2026-11-18) — start here
 
@@ -59,25 +59,30 @@ The first week was very quiet. See also "Early numbers" under Earlier status for
   - `salesReports` isn't refused, but it needs the **vendor number** (App Store Connect → Payments and Financial Reports). The number isn't recorded anywhere yet.
   - Until then, use ASC → Analytics by hand. Sources → Campaigns shows the bio-link `ct` values `b001-1/2/3`.
 - **Website clicks.** Vercel Web Analytics is **not enabled** on `stayondriving` (`web_analytics_not_enabled`). Turning it on is the cheap fix. Traffic from before that is lost.
-- **Instagram views.** Nothing collects them. Trev-HQ only records whether a post went out and its link.
-  - Whether B-001-1/2/3 actually posted was **not checked**: the permission check blocked reading Trev-HQ's Supabase with the service-role key.
-  - To check by hand: Inbox → Publishing, or `supabase db query --linked` as described in `~/Projects/AI_Team/HANDOVER.md`.
+- **Instagram views:** now collected daily by Trev-HQ (see *Post stats in Trev-HQ* below).
 
-**Next: post stats in Trev-HQ (planned, not built).**
-- Buffer's GraphQL API has `Post.metrics { type value unit }` and `metricsUpdatedAt`, refreshed daily.
-  - Metrics include `views`, `impressions`, `reach`, `comments`, `reactions`, `saves`, `shares` and `engagementRate`.
-  - They need a **personal** API key. The docs mention no plan limit, but whether Buffer Free returns metrics is **unverified**.
-  - The query is in Buffer's `examples/get-posts-with-metrics` doc.
-- **Blocked on a Buffer key on this Mac.**
-  - Trev-HQ's `BUFFER_API_KEY` is a Vercel **Sensitive** variable, so it can't be pulled: `vercel env pull` writes `[SENSITIVE]` instead. That placeholder was removed from `.env.local`.
-  - Trevor will create a second personal key ("Trev-HQ local stats") and add it to `~/Projects/Trev-HQ/.env.local` without pasting it in chat.
-  - Then run a read-only check that lists the channels and the sent posts with their metrics.
-- **Plan:**
-  1. The test call above.
-  2. A daily stats table keyed to `publish_actions`.
-  3. Read-only collection in the 14:00 UTC run, for posts from the last 30 days.
-  4. A stats panel in Inbox → Publishing.
-  5. Feed the results to the drafting agents.
+**Post stats in Trev-HQ (live since 2026-11-21).**
+- **First numbers (Buffer, refreshed 2026-11-21 07:03 UTC).** All three B-001 Reels posted. None got any likes, comments, saves or shares:
+
+  | Reel | Sent (UTC) | Views | Reach | Avg. watch |
+  |---|---|---|---|---|
+  | B-001-1 | 11-13 00:03 | 111 | 103 | 5.08 |
+  | B-001-2 | 11-15 00:02 | 122 | 110 | 5.18 |
+  | B-001-3 | 11-17 00:03 | 112 | 108 | 4.7 |
+
+  - Each Reel reached about 100 people, and viewers left after about 5 (Buffer gives watch time only as a "count", likely seconds).
+  - This fits PostHog: nothing shows the Reels brought in players.
+- **What was built** (Trev-HQ PR #12, merged as `08f644c` and deployed to production 2026-11-21):
+  - Migration `0016_post_stats`: one row per post per UTC day, keyed to `publish_actions`, with Buffer's `metrics` stored as returned. A missing metric stays missing, never 0.
+  - `lib/publisher/stats.ts`: a read-only collection step in the 14:00 UTC run and in Run now, for posts sent in the last 30 days. It's skipped when the kill switch is on.
+  - Inbox → Publishing shows a stats line under each post, with the change in views since the previous day.
+  - The weekly brief has a "Post stats from Buffer" section.
+- **Feeding the drafting agents:** AI_Team PR #27 tells agents that draft or plan posts to read that section of the newest `briefs/` file. **Open, needs merging.**
+- **Buffer key:** a personal key is in Vercel (Production, Sensitive) and in `~/Projects/Trev-HQ/.env.local`. Buffer Free **does** return post metrics.
+- **Gotchas:**
+  - After a deploy, reload the Inbox before clicking Run now. A tab opened before the deploy runs the old code; this happened on the first try.
+  - Commands run with Claude Code's `!` prefix can't take typed input, so a `read -rs` key prompt fails silently. Run it in a real Terminal instead.
+  - To read the stats by hand: `supabase db query --linked "select ... from post_stats"` from `~/Projects/Trev-HQ`.
 
 **More social channels.**
 - Accounts exist on Instagram, TikTok, YouTube and X, all `@stayondriving` with 2FA on.
