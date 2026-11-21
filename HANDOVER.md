@@ -1,10 +1,21 @@
 # Stay On — Handover
 
-Endless arcade night-driving game ("Stay On"), synthwave/outrun aesthetic. Native iOS app via Capacitor, plus a parallel web build. Last updated 2026-11-18 (**1.0.1 is live on the App Store**, including the EU; **1.0.2 is submitted** with new App Store listing text (ASO) and the Sentry fix; AdMob app-ads.txt **verified**, AdMob app **approved**, EU consent message **published**; ads show on a real device). **Marketing went live the same day:** the first batch of 3 Instagram Reels (B-001) is approved and set to post through Trev-HQ → Buffer from Thu 2026-11-12. See *Marketing: AI team pilot*.
+Endless arcade night-driving game ("Stay On"), synthwave/outrun aesthetic. Native iOS app via Capacitor, plus a parallel web build. Last updated 2026-11-21 (**1.0.2 is live on the App Store** as "Stay On Driving: Neon Racer", including the EU, with new App Store listing text (ASO) and the Sentry fix; AdMob app-ads.txt **verified**, AdMob app **approved**, EU consent message **published**; ads show on a real device). **Marketing went live the same day:** the first batch of 3 Instagram Reels (B-001) is approved and set to post through Trev-HQ → Buffer from Thu 2026-11-12. See *Marketing: AI team pilot*.
 
 ## Current status (2026-11-18) — start here
 
-### 1.0.2: submitted 2026-11-18 (`WAITING_FOR_REVIEW`)
+### 1.0.2: live since 2026-11-19
+
+- **Approved and released 2026-11-19 17:25 UTC** (release type `AFTER_APPROVAL`, so it went out on its own). The "ready for distribution" email names the app "Stay On Driving: Neon Racer".
+- **Listing checked 2026-11-21:**
+  - The iTunes lookup shows version 1.0.2, the name **"Stay On Driving: Neon Racer"** and the 1.0.2 What's New text.
+  - The ASC API shows the en-US subtitle **"Endless Retro Arcade Racer"** on the `READY_FOR_SALE` app info.
+  - The listing still has 0 ratings.
+- **PR #35 merged** 2026-11-21 (merge commit `889614c`), so `main` matches the shipped 1.0.2 (`package.json` version `1.0.2`).
+- **ASO comparison window:** the new keywords took effect 2026-11-19. Compare search impressions and downloads before and after that date.
+- 1.0.2 is the first App Store build with the Sentry environment fix (PR #23). Simulator and Debug runs no longer report as `production`.
+
+#### Submission record (2026-11-18)
 
 - **Why:** the 2026-11-18 numbers (see "Early numbers" below) show the bottleneck is installs, so 1.0.2 is mainly an **App Store search (ASO) update**. Apple's search only uses name, subtitle and keywords; Apple locks those, and the description, on a live version, which is why a new version was needed.
 - **Listing text** (set through the API on the 1.0.2 draft and read back before submitting; full text and reasoning in `Stay_On_iOS/release-notes/1.0.2.md` on `release/1.0.2`):
@@ -19,10 +30,10 @@ Endless arcade night-driving game ("Stay On"), synthwave/outrun aesthetic. Nativ
   - Checks: `npm run build`, `npx cap sync ios`, and the iOS 27.0 simulator (still running 15 s after launch, no crash report). The simulator was **shut down afterwards** to avoid the Sentry "App Hang" noise from 1.0.1's simulator run.
   - Processing reached `VALID` in about 3 min. It was tracked with the `v1/builds` + `filter[version]` query (see the 1.0.1 gotcha below).
   - The build was attached, the fields checked (name, subtitle, keywords, What's New, Marketing URL, review notes, contact), then submitted 2026-11-18. Release type `AFTER_APPROVAL`.
-- **Draft PR #35** (`release/1.0.2`). Merge it once 1.0.2 is approved.
+- **PR #35** (`release/1.0.2`): merged 2026-11-21 after approval (see above).
 - **Next:**
-  1. When 1.0.2 is live, check the listing shows the new name and subtitle, merge PR #35, and update this file.
-  2. After 2–4 weeks, compare search impressions and downloads before and after the new keywords (App Store Connect → Analytics).
+  1. ~~When 1.0.2 is live, check the listing shows the new name and subtitle, merge PR #35, and update this file.~~ Done 2026-11-21.
+  2. Around 2026-12-03 to 12-17 (2–4 weeks after 11-19), compare search impressions and downloads before and after the new keywords (App Store Connect → Analytics).
   3. The next biggest boost to downloads: use all 10 screenshots (only 5 now, all 6.7") and add an App Preview video. Ship them with a later version.
 
 ### Launch metrics (checked 2026-11-18)
